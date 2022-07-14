@@ -13,7 +13,7 @@ class DustServer:
         self.rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.rSocket.bind(("",SERVER_PORT))
         self.rThread = threading.Thread(target=self.receive, name="receive_thread")
-        self.rThread.daemon = True
+        #self.rThread.daemon = True
         self.rThread.start()
         self.game = Game(self.broadcast)
         print("Game Server Started...")
