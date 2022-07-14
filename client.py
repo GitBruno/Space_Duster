@@ -1,32 +1,35 @@
 import sys, socket, threading, time
-
-SERVER_ADDRESS = "127.0.0.1"
-SERVER_PORT = 44444
-CLIENT_PORT = 37020
+from defines import *
 
 if len(sys.argv) == 2:
     SERVER_ADDRESS = sys.argv[1]
 
-rSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
-rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-rSocket.bind(("", CLIENT_PORT))
+class DustClient:
+    rSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-sSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+    def __init__(self):
+        self.rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.rSocket.bind(("", CLIENT_PORT))
+        self.rThread = threading.Thread(target=self.receive, name="receive_loop")
+        #self.rThread.daemon = True
+        self.rThread.start()
 
-def receive_loop():
+    def receive(self):
+        while True:
+            data, address = self.rSocket.recvfrom(1024)
+            print(data)
+
+    def send(self, message):
+        self.sSocket.sendto(message, (SERVER_ADDRESS, SERVER_PORT))
+
+client = DustClient()
+
+def send_loop():
     while True:
-        data, address = rSocket.recvfrom(1024)
-        print(data)
-
-def send():
-    while True:
-        sSocket.sendto(b"Message for Server", (SERVER_ADDRESS, SERVER_PORT))
+        client.send(b"Message for Server")
         time.sleep(2)
 
-send_thread = threading.Thread(target=send, name="send_loop")
-#send_thread.daemon = True
-send_thread.start()
-
-receive_thread = threading.Thread(target=receive_loop, name="receive_loop")
-receive_thread.start()
+test_thread = threading.Thread(target=send_loop, name="send_loop")
+test_thread.start()
