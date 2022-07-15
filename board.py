@@ -7,6 +7,8 @@ from utilis import load_sprite
 class Board:
     def __init__(self, send):
         self.id = 0
+        self.idFrame  = 0
+        self.idFrames = 60
         self.send = send
         self.screen = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
         pygame.display.set_caption('Space Duster')
@@ -14,17 +16,31 @@ class Board:
         self.background = load_sprite("space", False)
         self.clock = pygame.time.Clock()
         self.ships = []
+    
+    def requestId(self):
+        if self.idFrame < self.idFrames:
+            self.idFrame = self.idFrame+1
+        else:
+            self.idFrame = 0
+            self.send(['id', self.id])
 
     def sendUserAction(self):
+        if self.id == 0:
+            self.requestId()
+            return
+
+        key_bulletshield = ''
+        key_updown = ''
+        key_leftright = ''
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                key_bulletshield = 'B'
 
         is_key_pressed = pygame.key.get_pressed()
-        key_bulletshield = ''
-        key_updown = ''
-        key_leftright = ''
 
         if is_key_pressed[pygame.K_UP]:
             key_updown = 'U'
@@ -35,8 +51,8 @@ class Board:
             key_leftright = 'R'
         elif is_key_pressed[pygame.K_LEFT]:
             key_leftright = 'L'
-        if is_key_pressed[pygame.K_SPACE]:
-            key_bulletshield = 'B'
+        if is_key_pressed[pygame.K_LSHIFT] or is_key_pressed[pygame.K_RSHIFT]:
+            key_bulletshield = 'S'
 
         msg = ['key', self.id, key_updown, key_leftright, key_bulletshield]
         self.send(msg)

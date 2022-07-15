@@ -19,7 +19,6 @@ class DustClient:
         while True:
             data, address = self.rSocket.recvfrom(BUFFERSIZE)
             self.board.update(msgpack.unpackb(data))
-            #print(msgpack.unpackb(data)[0],address)
 
     def send(self, message):
         self.sSocket.sendto(msgpack.packb(message), (self.server_address, SERVER_PORT))

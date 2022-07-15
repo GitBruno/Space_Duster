@@ -5,8 +5,9 @@ from defines import *
 from models import s_Spaceship, s_Bullet
 
 class Game:
-    def __init__(self, broadcast):
-        self.broadcast = broadcast
+    clientCounter = 0
+    def __init__(self, send):
+        self.send = send
         self.clock = pygame.time.Clock()
         self.shipmap = {}
         self.bullets = []
@@ -19,24 +20,32 @@ class Game:
             self._send_update()
             self.clock.tick(60)
  
-    def handle_input(self, arr):
- 
-        print(str(arr))
+    def handle_input(self, data, source):
         
-        messageType = arr[0]
-        playerid = arr[1]
- 
-        if playerid == 0: return
-        ship = self.shipmap[playerid]
+        print(data,source)
+        
+        messageType = data[0]
+        playerId    = data[1]
+
+        if(messageType == 'id'):
+            self.clientCounter += 1
+            self.send(["id",self.clientCounter],source[0])
+            return
+
+        if playerId == 0: return
+
+        return
+
+        ship = self.shipmap[playerId]
         if(ship.alpha <= 250):
             ship.alpha = ship.alpha + 5
         else:
             ship.alpha = 255
 
         if(messageType == 'key'):
-            key_updown       = arr[2]
-            key_leftright    = arr[3]
-            key_bulletshield = arr[4]
+            key_updown       = data[2]
+            key_leftright    = data[3]
+            key_bulletshield = data[4]
 
             if(key_updown == 'U'):
                 ship.accelerate()
@@ -53,10 +62,9 @@ class Game:
             if(key_bulletshield == 'B'):
                 self.bullets.append(s_Bullet(ship.position, ship.direction * ship.BULLET_SPEED + ship.velocity))
 
-        self._send_update()
 
-    def addPlayer(self, playerID):
-        self.shipmap[playerID] = s_Spaceship(playerID)
+    def addPlayer(self, playerId):
+        self.shipmap[playerId] = s_Spaceship(playerId)
 
     def _send_update(self):
         update_ships_msg = ['ships']
@@ -78,5 +86,5 @@ class Game:
                 ship.alpha = 0
             ship.thruster = False
 
-        self.broadcast(update_ships_msg)
-        self.broadcast(update_bullet_msg)
+        self.send(update_ships_msg)
+        self.send(update_bullet_msg)
