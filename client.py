@@ -1,9 +1,14 @@
-import sys
+import sys, pygame
 from defines import *
 from dustclient import DustClient
 
 if len(sys.argv) == 2:
     SERVER_ADDRESS = sys.argv[1]
 
-client = DustClient(SERVER_ADDRESS)
+pygame.init()
+pygame.display.init()
+screen = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
+pygame.display.set_caption('Space Duster')
+
+client = DustClient(SERVER_ADDRESS, screen)
 client.board.loop()

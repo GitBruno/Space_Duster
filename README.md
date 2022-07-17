@@ -12,11 +12,6 @@ The player controls a single spaceship in an asteroid field that is traversed by
 
 This game is based on Asteroids which has it's physics model, control scheme, and gameplay elements derived from Spacewar!, Computer Space, and Space Invaders. The Asteroids game is rendered on a vector display in a two-dimensional view that wraps around both screen axes. As we have 16 players and a very small screen the play area has been made larger and we follow the ship with a camera. The field is still titled for infinacy.
 
-### Specification
-
-  - Screen Size: 256 x 256 pixels
-  - 16 Players
-
 ## Install
 
     pip install -r requirements.txt
@@ -35,6 +30,37 @@ Foreign clients can join by specifying the servers ipaddress eg:
 
     py client.py 192.168.0.1
 
+### Specification
+
+  - Screen Size: 256 x 256 pixels
+  - 16 Players
+
+#### Messages
+
+**Client Messages**
+|------------------|------------------|---------------|---------------|---------------|------------------|
+| Request ID       | "id"             | 0             |               |               |                  |
+| Key Event        | "key"            | 1             | key_updown    | key_leftright | key_bulletshield |
+
+**Server Messages**
+
+| Event            | [0] Message type | [1] Data Array           |
+|------------------|------------------|--------------------------|
+| Ships Update     | "s"              | Array of `[Ship Data]`   |
+| Bullets Update   | "b"              | Array of `[Bullet Data]` |
+
+`Ship Data`(array):
+    0. ID (int)
+    1. Position X (int)
+    2. Position Y (int)
+    3. Alpha (0-255)
+    4. Thruster (Bool, 0 1)
+    5. Direction X (Float)
+    6. Direction Y (Float)
+
+`Bullet Data`(array):
+    0. Position X (int)
+    1. Position Y (int)
 
 ### Dependencies
 

@@ -6,9 +6,9 @@ class DustClient:
     rSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def __init__(self, server_address):
+    def __init__(self, server_address, screen):
         self.server_address = server_address
-        self.board = Board(self.send)
+        self.board = Board(self.send, screen)
         self.rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.rSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.rSocket.bind(("", CLIENT_PORT))

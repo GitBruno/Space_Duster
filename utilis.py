@@ -3,6 +3,9 @@ from defines import *
 from pygame import Color, image, mixer
 from pygame.math import Vector2
 
+def trunc(num):
+    return float(('%.6f' % num).rstrip('0').rstrip('.'))
+
 def get_image_path(name):
     path = f"assets/sprites/{name}.png"
     return path
@@ -35,6 +38,21 @@ def get_random_velocity(min_speed, max_speed):
 def load_sound(name):
     path = f"assets/sounds/{name}.wav"
     return mixer.Sound(path)
+
+def infinityBlit(sprite, blit_position, toSurface):
+    # Draw with 8 inifinity tiles
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (GROUND_SIZE,-GROUND_SIZE)))))
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (GROUND_SIZE, 0)))))
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (GROUND_SIZE, GROUND_SIZE)))))
+
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (0,-GROUND_SIZE)))))
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (0, GROUND_SIZE)))))
+
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (-GROUND_SIZE,-GROUND_SIZE)))))
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (-GROUND_SIZE, 0)))))
+    toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (-GROUND_SIZE, GROUND_SIZE)))))
+
+    toSurface.blit(sprite, blit_position)
 
 def blit_text(surface, text, font, offset=(0,0), color=Color("white")):
     text_surface = font.render(text, True, color)

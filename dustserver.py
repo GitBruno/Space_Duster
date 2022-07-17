@@ -17,17 +17,11 @@ class DustServer:
         self.game = Game(self.send)
         print("Game Server Started...")
 
-    def send(self, message, client_address=False):
-        if client_address:
-            self.unicast(client_address, message)
-        else:
-            self.broadcast(message)
-
-    def unicast(self, client_address, message):
-        self.sSocket.sendto(msgpack.packb(message), (client_address, CLIENT_PORT))
-
-    def broadcast(self, message):
-        self.sSocket.sendto(msgpack.packb(message), ('<broadcast>', CLIENT_PORT))
+    def send(self, message, client_ip=False):
+        if client_ip: # unicast
+            self.sSocket.sendto(msgpack.packb(message), (client_ip, CLIENT_PORT))
+        else: # broadcast
+            self.sSocket.sendto(msgpack.packb(message), ('<broadcast>', CLIENT_PORT))
 
     def receive(self):
         while True:

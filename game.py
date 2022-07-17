@@ -17,25 +17,25 @@ class Game:
 
     def loop(self):
         while True:
-            self._send_update()
+            self._update()
             self.clock.tick(60)
  
     def handle_input(self, data, source):
-        
-        print(data,source)
-        
-        messageType = data[0]
-        playerId    = data[1]
 
-        if(messageType == 'id'):
+        messageType = data[0]
+
+        if messageType == 'id_request':
+            print(data)
             self.clientCounter += 1
             self.send(["id",self.clientCounter],source[0])
             return
-
+        
+        playerId = data[1]
         if playerId == 0: return
 
-        return
-
+        if playerId not in self.shipmap:
+            self.addPlayer(playerId)
+ 
         ship = self.shipmap[playerId]
         if(ship.alpha <= 250):
             ship.alpha = ship.alpha + 5
@@ -60,31 +60,40 @@ class Game:
                 ship.rotate(clockwise=True)
    
             if(key_bulletshield == 'B'):
-                self.bullets.append(s_Bullet(ship.position, ship.direction * ship.BULLET_SPEED + ship.velocity))
-
+                self.bullets.append(s_Bullet(ship.ownerid, ship.position, ship.direction * ship.BULLET_SPEED + ship.velocity))
 
     def addPlayer(self, playerId):
         self.shipmap[playerId] = s_Spaceship(playerId)
 
-    def _send_update(self):
-        update_ships_msg = ['ships']
-        update_bullet_msg = ['bullets']
+    def _update(self):
+        update_ships_msg = ['s']
+        update_bullet_msg = ['b']
 
+        delKeys = []
         for b in self.bullets:
             b.move()
-            #if(b.moves <= 0):
-            #  bullets.remove(b)
-            #else:
-            update_bullet_msg.append([b.position[0], b.position[1]])
+            if(b.moves <= 0):
+                delKeys.append(b)
+            else:
+                update_bullet_msg.append(b.getData())
 
+        for key in delKeys:
+            self.bullets.remove(key)
+
+        delKeys = []
         for key, ship in self.shipmap.items():
             ship.move()
-            update_ships_msg.append([ship.ownerid, ship.position[0], ship.position[1], ship.alpha, ship.thruster, ship.direction[0], ship.direction[1]])
-            # Consider ships dead when no control has happend?
             ship.alpha = ship.alpha - 0.5
+            ship.thruster = False
             if(ship.alpha < 0):
                 ship.alpha = 0
-            ship.thruster = False
+                delKeys.append(key)
+            else:
+                update_ships_msg.append(ship.getData())
+
+        for key in delKeys:
+            del self.shipmap[key]
+            self.send(['d', key])
 
         self.send(update_ships_msg)
         self.send(update_bullet_msg)

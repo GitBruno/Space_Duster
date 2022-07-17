@@ -2,27 +2,29 @@ import sys, pygame
 from pygame import Vector2
 from pygame.locals import *
 from defines import *
-from utilis import load_sprite
+from utilis import load_sprite, infinityBlit
+from models import c_Spaceship, c_Bullet
 
 class Board:
-    def __init__(self, send):
-        self.id = 0
-        self.idFrame  = 0
-        self.idFrames = 60
+    def __init__(self, send, screen):
         self.send = send
-        self.screen = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
-        pygame.display.set_caption('Space Duster')
+        self.screen = screen
         self.playground = pygame.Surface((GROUND_SIZE, GROUND_SIZE)) 
         self.background = load_sprite("space", False)
         self.clock = pygame.time.Clock()
-        self.ships = []
-    
+        self.id = 0
+        self.myShip = c_Spaceship(0, Vector2(MID_GROUND,MID_GROUND), Vector2(0,-1), 100)
+        self.foreignShips = []
+        self.bullets = []
+        self.idFrame  = 0
+        self.idFrames = 120
+
     def requestId(self):
         if self.idFrame < self.idFrames:
             self.idFrame = self.idFrame+1
         else:
             self.idFrame = 0
-            self.send(['id', self.id])
+            self.send(['id_request'])
 
     def sendUserAction(self):
         if self.id == 0:
@@ -58,52 +60,44 @@ class Board:
         self.send(msg)
 
     def update(self, gameEvent):
-        print(gameEvent)
-        """
         if gameEvent[0] == 'id':
+            print(gameEvent)
+        if gameEvent[0] == 'id' and self.id == 0:
             self.id = gameEvent[1]
-        elif gameEvent[0] == 'ships':
-            otherShips = []
+            self.myShip.id = self.id
+            self.myShip.alpha = 255
+        elif gameEvent[0] == 's':
+            gameEvent.pop(0)
+            self.foreignShips = []
             for ship in gameEvent:
                 if ship[0] == self.id:
-                    myShip.update(ship[1], ship[2], ship[4], ship[5], ship[6])
+                    self.myShip.update(Vector2(ship[1], ship[2]), Vector2(ship[5], ship[6]), ship[4])
                 else:
-                    otherShips.append(Spaceship(ship[1], ship[2], ship[0], ship[5], ship[6], ship[3]))
-        elif gameEvent[0] == 'bullets':
+                    self.foreignShips.append(c_Spaceship(ship[0],Vector2(ship[1], ship[2]), Vector2(ship[5], ship[6]), ship[4], ship[3]))
+        elif gameEvent[0] == 'b':
             gameEvent.pop(0)
-            bullets = []
+            self.bullets = []
             for b in gameEvent:
-                bullets.append(Bullet(Vector2(b[0], b[1])))
-        """
+                self.bullets.append(c_Bullet(b[0],Vector2(b[1], b[2])))
 
     def draw(self):
         self.playground.blit(self.background, (0,0))
+        myShipPosition = self.myShip.position
 
-        myShipPosition = Vector2(0,0)
-        for ship in self.ships:
-            if(ship.id == self.id):
-                myShipPosition = ship.position
-            ship.render()
+        self.myShip.draw(self.playground)
+
+        for ship in self.foreignShips:
+            ship.draw(self.playground)
+        
+        for bullet in self.bullets:
+            bullet.draw(self.playground)
 
         centre_position = (-myShipPosition[0]+MID_SCREEN,-myShipPosition[1]+MID_SCREEN)
 
-        # Draw tile 8 borders
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (GROUND_SIZE,-GROUND_SIZE)))))
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (GROUND_SIZE,0)))))
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (GROUND_SIZE,GROUND_SIZE)))))
-        
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (0,-GROUND_SIZE)))))
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (0,GROUND_SIZE)))))
-
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (-GROUND_SIZE,-GROUND_SIZE)))))
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (-GROUND_SIZE,0)))))
-        self.screen.blit(self.playground, tuple(map(sum, zip(centre_position, (-GROUND_SIZE,GROUND_SIZE)))))
-
-        self.screen.blit(self.playground, centre_position)
+        infinityBlit(self.playground, centre_position, self.screen)
 
     def loop(self):
         while True:
             self.sendUserAction()
             self.draw()
             pygame.display.flip()
-
