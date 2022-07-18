@@ -1,12 +1,14 @@
 import sys, pygame
 from pygame import Vector2
 from pygame.locals import *
+from zmq import FAIL_UNROUTABLE
 from defines import *
 from utilis import load_sprite, infinityBlit
 from models import c_Spaceship, c_GameObject
 
-class Board:
+class c_Game:
     def __init__(self, send, screen):
+        self.clock = pygame.time.Clock()
         self.id = 0
         self.idFrame  = 0
         self.idFrames = 120
@@ -33,6 +35,7 @@ class Board:
         key_bulletshield = ''
         key_updown = ''
         key_leftright = ''
+        action = False
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -40,23 +43,30 @@ class Board:
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 key_bulletshield = 'B'
+                action = True
 
         is_key_pressed = pygame.key.get_pressed()
 
         if is_key_pressed[pygame.K_UP]:
             key_updown = 'U'
+            action = True
             #self.push_Cam()
         elif is_key_pressed[pygame.K_DOWN]:
             key_updown = 'D'
+            action = True
         if is_key_pressed[pygame.K_RIGHT]    :
             key_leftright = 'R'
+            action = True
         elif is_key_pressed[pygame.K_LEFT]:
             key_leftright = 'L'
+            action = True
         if is_key_pressed[pygame.K_LSHIFT] or is_key_pressed[pygame.K_RSHIFT]:
             key_bulletshield = 'S'
+            action = True
 
-        msg = ['k', self.id, [key_updown, key_leftright, key_bulletshield]]
-        self.send(msg)
+        if action == True:
+            msg = ['k', self.id, [key_updown, key_leftright, key_bulletshield]]
+            self.send(msg)
 
     def update(self, gameEvent):
         type, data = gameEvent
@@ -78,15 +88,15 @@ class Board:
             for bullet in data:
                 objectId = bullet[1]
                 moves = bullet[6]
-                print (moves)
                 if objectId in self.bulletMap:
                     if moves > 4: # in case we miss a few frame
                         self.bulletMap[objectId].update(Vector2(bullet[2], bullet[3]))
                     else:
-                        print("DELETE!")
                         self.bulletMap.pop(objectId)
                 elif moves > 4:
                     self.bulletMap[objectId] = c_GameObject(bullet[0], bullet[1], self.s_bullet, Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
+        self.draw()
+        pygame.display.flip()
 
     def draw(self):
         self.playground.blit(self.background, (0,0))
@@ -105,7 +115,9 @@ class Board:
         infinityBlit(self.playground, centre_position, self.screen)
 
     def loop(self):
+        # INIT SCREEN BEFORE GETTING UPDATES FROM SERVER
+        self.draw()
+        pygame.display.flip()
         while True:
             self.sendUserAction()
-            self.draw()
-            pygame.display.flip()
+            self.clock.tick(60)

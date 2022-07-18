@@ -4,7 +4,7 @@ from pygame.math import Vector2
 from defines import *
 from models import s_Spaceship, s_Bullet
 
-class Game:
+class s_Game:
     clientCounter = 0
     def __init__(self, send):
         self.send = send
@@ -53,7 +53,7 @@ class Game:
                 ship.thruster = 0
 
             if(key_leftright == 'L'):
-                ship.rotate(clockwise=False
+                ship.rotate(clockwise=False)
             elif(key_leftright == 'R'):
                 ship.rotate(clockwise=True)
 

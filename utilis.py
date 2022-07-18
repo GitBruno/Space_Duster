@@ -9,7 +9,7 @@ def new_object_id():
     return OBJECT_COUNTER
 
 def trunc(num):
-    return float(('%.6f' % num).rstrip('0').rstrip('.'))
+    return float(('%.8f' % num).rstrip('0').rstrip('.'))
 
 def get_image_path(name):
     path = f"assets/sprites/{name}.png"
