@@ -3,6 +3,11 @@ from defines import *
 from pygame import Color, image, mixer
 from pygame.math import Vector2
 
+def new_object_id():
+    global OBJECT_COUNTER, MAX_OBJECTS
+    OBJECT_COUNTER = (OBJECT_COUNTER + 1)%MAX_OBJECTS
+    return OBJECT_COUNTER
+
 def trunc(num):
     return float(('%.6f' % num).rstrip('0').rstrip('.'))
 

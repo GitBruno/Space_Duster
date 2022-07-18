@@ -38,29 +38,42 @@ Foreign clients can join by specifying the servers ipaddress eg:
 #### Messages
 
 **Client Messages**
-|------------------|------------------|---------------|---------------|---------------|------------------|
-| Request ID       | "id"             | 0             |               |               |                  |
-| Key Event        | "key"            | 1             | key_updown    | key_leftright | key_bulletshield |
+| Event            | [0] Message type | [1] Player ID | [2] Data     |
+|------------------|------------------|---------------|--------------|
+| ID Request       | "id_r"           | `0`           | `0`          |
+| Key Event        | "k"              | `int`         | `[Key Data]` |
 
 **Server Messages**
 
 | Event            | [0] Message type | [1] Data Array           |
 |------------------|------------------|--------------------------|
-| Ships Update     | "s"              | Array of `[Ship Data]`   |
-| Bullets Update   | "b"              | Array of `[Bullet Data]` |
+| Id Assignment    | "id"             | [`int`]                  |
+| Ships Update     | "s"              | [`[Ship Data]`]          |
+| Bullets Update   | "b"              | [`[Bullet Data]`]        |
+
+`Key Data`(array):
+    0. key_updown
+    1. key_leftright
+    2. key_bulletshield
 
 `Ship Data`(array):
-    0. ID (int)
-    1. Position X (int)
-    2. Position Y (int)
-    3. Alpha (0-255)
-    4. Thruster (Bool, 0 1)
-    5. Direction X (Float)
-    6. Direction Y (Float)
+    0. OwnerId (int)
+    1. ObjectId (int)
+    2. Position X (float)
+    3. Position Y (float)
+    4. Direction X (Float)
+    5. Direction Y (Float)
+    6. Thruster (Bool)
+    7. Alpha (0-255)
 
 `Bullet Data`(array):
-    0. Position X (int)
-    1. Position Y (int)
+    0. OwnerId (int)
+    1. ObjectId (int)
+    2. Position X (float)
+    3. Position Y (float)
+    4. Direction X (Float)
+    5. Direction Y (Float)
+    6. Moves (int)
 
 ### Dependencies
 

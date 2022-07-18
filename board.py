@@ -3,28 +3,27 @@ from pygame import Vector2
 from pygame.locals import *
 from defines import *
 from utilis import load_sprite, infinityBlit
-from models import c_Spaceship, c_Bullet
+from models import c_Spaceship, c_GameObject
 
 class Board:
     def __init__(self, send, screen):
+        self.id = 0
+        self.idFrame  = 0
+        self.idFrames = 120
         self.send = send
         self.screen = screen
         self.playground = pygame.Surface((GROUND_SIZE, GROUND_SIZE)) 
         self.background = load_sprite("space", False)
-        self.clock = pygame.time.Clock()
-        self.id = 0
-        self.myShip = c_Spaceship(0, Vector2(MID_GROUND,MID_GROUND), Vector2(0,-1), 100)
-        self.foreignShips = []
-        self.bullets = []
-        self.idFrame  = 0
-        self.idFrames = 120
+        self.s_bullet = load_sprite('bullet')
+        self.shipMap = {}
+        self.bulletMap = {}
 
     def requestId(self):
         if self.idFrame < self.idFrames:
             self.idFrame = self.idFrame+1
         else:
             self.idFrame = 0
-            self.send(['id_request'])
+            self.send(['id_r',0,0])
 
     def sendUserAction(self):
         if self.id == 0:
@@ -56,43 +55,52 @@ class Board:
         if is_key_pressed[pygame.K_LSHIFT] or is_key_pressed[pygame.K_RSHIFT]:
             key_bulletshield = 'S'
 
-        msg = ['key', self.id, key_updown, key_leftright, key_bulletshield]
+        msg = ['k', self.id, [key_updown, key_leftright, key_bulletshield]]
         self.send(msg)
 
     def update(self, gameEvent):
-        if gameEvent[0] == 'id':
-            print(gameEvent)
-        if gameEvent[0] == 'id' and self.id == 0:
-            self.id = gameEvent[1]
-            self.myShip.id = self.id
-            self.myShip.alpha = 255
-        elif gameEvent[0] == 's':
-            gameEvent.pop(0)
-            self.foreignShips = []
-            for ship in gameEvent:
-                if ship[0] == self.id:
-                    self.myShip.update(Vector2(ship[1], ship[2]), Vector2(ship[5], ship[6]), ship[4])
+        type, data = gameEvent
+
+        if type == 'id':
+            if self.id == 0:
+                self.id = data
+            return
+
+        if type == 's':
+            for ship in data:
+                playerId = ship[0]
+                if playerId in self.shipMap:
+                    self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6])
                 else:
-                    self.foreignShips.append(c_Spaceship(ship[0],Vector2(ship[1], ship[2]), Vector2(ship[5], ship[6]), ship[4], ship[3]))
-        elif gameEvent[0] == 'b':
-            gameEvent.pop(0)
-            self.bullets = []
-            for b in gameEvent:
-                self.bullets.append(c_Bullet(b[0],Vector2(b[1], b[2])))
+                    self.shipMap[playerId] = c_Spaceship(ship[0],Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[7])
+
+        if type == 'b':
+            for bullet in data:
+                objectId = bullet[1]
+                moves = bullet[6]
+                print (moves)
+                if objectId in self.bulletMap:
+                    if moves > 4: # in case we miss a few frame
+                        self.bulletMap[objectId].update(Vector2(bullet[2], bullet[3]))
+                    else:
+                        print("DELETE!")
+                        self.bulletMap.pop(objectId)
+                elif moves > 4:
+                    self.bulletMap[objectId] = c_GameObject(bullet[0], bullet[1], self.s_bullet, Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
 
     def draw(self):
         self.playground.blit(self.background, (0,0))
-        myShipPosition = self.myShip.position
 
-        self.myShip.draw(self.playground)
-
-        for ship in self.foreignShips:
-            ship.draw(self.playground)
-        
-        for bullet in self.bullets:
+        for key, bullet in self.bulletMap.items():
             bullet.draw(self.playground)
 
-        centre_position = (-myShipPosition[0]+MID_SCREEN,-myShipPosition[1]+MID_SCREEN)
+        for key, ship in self.shipMap.items():
+            ship.draw(self.playground)
+
+        if self.id in self.shipMap:
+            centre_position = (-self.shipMap[self.id].position[0]+MID_SCREEN,-self.shipMap[self.id].position[1]+MID_SCREEN)
+        else:
+            centre_position = (-MID_SCREEN,-MID_SCREEN)
 
         infinityBlit(self.playground, centre_position, self.screen)
 

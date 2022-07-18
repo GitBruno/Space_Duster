@@ -3,11 +3,12 @@ import random
 from defines import *
 from pygame.math import Vector2
 from pygame.transform import rotozoom
-from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc
+from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id
 
 class s_GameObject:
     def __init__(self, ownerid, position, velocity):
         self.ownerid  = ownerid
+        self.objectid = new_object_id()
         self.position = position
         self.velocity = velocity
 
@@ -15,29 +16,34 @@ class s_GameObject:
         self.position = wrap_ground(self.position + self.velocity)
 
     def getData(self):
-        return [ self.ownerid, 
+        return [ self.ownerid, self.objectid, 
                  trunc(self.position[0]),
-                 trunc(self.position[1])]
+                 trunc(self.position[1]),
+                 trunc(self.velocity[0]),
+                 trunc(self.velocity[1])]
 
 class c_GameObject:
-    def __init__(self, position):
+    def __init__(self, ownerid, objectid, sprite, position=Vector2(MID_GROUND,MID_GROUND), direction=Vector2(0, -1)):
+        self.ownerid  = ownerid
+        self.objectid = objectid
         self.position = position
-        self.width  = 0
-        self.height = 0
-        self.radius = 0
-        self.sprite = 0
+        self.direction = direction
+        self.sprite = sprite
+        self.width  = self.sprite.get_width()
+        self.height = self.sprite.get_height()
+        self.radius = self.width*0.5
 
-    def draw(self, toSurface):
+    def update(self, position):
+        self.position = position
+
+    def draw(self, surface):
         blit_position = self.position - (self.radius,self.radius)
-        infinityBlit(self.sprite, blit_position, toSurface)
-
+        infinityBlit(self.sprite, blit_position, surface)
+ 
 class s_Spaceship(s_GameObject):
-    MANEUVERABILITY = 0.1
-    ACCELERATION = 0.002
-    BULLET_SPEED = 3
-
     def __init__(self, ownerid):
         self.ownerid   = ownerid
+        self.objectid = new_object_id()
         self.position  = get_random_position()
         self.velocity  = Vector2(0, 0)
         self.direction = Vector2(0, -1) #up
@@ -46,22 +52,22 @@ class s_Spaceship(s_GameObject):
 
     def rotate(self, clockwise=True):
         sign = 1 if clockwise else -1
-        angle = self.MANEUVERABILITY * sign
+        angle = SHIP_MANEUVERABILITY * sign
         self.direction.rotate_ip(angle)
 
     def accelerate(self):
-        self.velocity += self.direction * self.ACCELERATION
+        self.velocity += self.direction * SHIP_ACCELERATION
         self.thruster = True
     
     def slow_down(self):
-        DEAC = self.ACCELERATION*0.25
-        if(self.velocity[0] >= self.ACCELERATION):
+        DEAC = SHIP_ACCELERATION*0.25
+        if(self.velocity[0] >= SHIP_ACCELERATION):
             self.velocity = (self.velocity[0]-DEAC,self.velocity[1]) 
-        if(self.velocity[1] >= self.ACCELERATION):
+        if(self.velocity[1] >= SHIP_ACCELERATION):
             self.velocity = (self.velocity[0],self.velocity[1]-DEAC) 
-        if(self.velocity[0] <= self.ACCELERATION):
+        if(self.velocity[0] <= SHIP_ACCELERATION):
             self.velocity = (self.velocity[0]+DEAC,self.velocity[1]) 
-        if(self.velocity[1] <= self.ACCELERATION):
+        if(self.velocity[1] <= SHIP_ACCELERATION):
             self.velocity = (self.velocity[0],self.velocity[1]+DEAC) 
 
         if( (self.velocity[0] < 0.001) and (self.velocity[0] > -0.001) ):
@@ -70,17 +76,16 @@ class s_Spaceship(s_GameObject):
             self.velocity = (self.velocity[0],0)
     
     def getData(self):
-        return [ self.ownerid, 
+        return [ self.ownerid, self.objectid, 
                  trunc(self.position[0]),
                  trunc(self.position[1]),
-                 self.alpha,
-                 self.thruster, 
                  trunc(self.direction[0]), 
-                 trunc(self.direction[1])]
+                 trunc(self.direction[1]),
+                 self.thruster, self.alpha]
 
 class c_Spaceship(c_GameObject):
-    def __init__(self, id, position, direction, thruster=0, alpha=0):
-        self.id = id
+    def __init__(self, ownerid, position, direction, thruster=0, alpha=0):
+        self.ownerid = ownerid
         self.position = position
         self.direction = direction
         self.alpha = alpha
@@ -113,15 +118,33 @@ class c_Spaceship(c_GameObject):
 
 class s_Bullet(s_GameObject):
     moves = random.randrange(60, 120)
+
     def move(self):
         self.moves = self.moves-1
         self.position = wrap_ground(self.position + self.velocity)
+    
+    def getData(self):
+        return [ self.ownerid, self.objectid, 
+                 trunc(self.position[0]),
+                 trunc(self.position[1]),
+                 trunc(self.velocity[0]),
+                 trunc(self.velocity[1]),
+                 self.moves]
+
 
 class c_Bullet(c_GameObject):
-    def __init__(self, ownerid, position):
-        self.ownerid = ownerid
-        self.position = position
-        self.sprite = load_sprite('bullet')
-        self.width = self.sprite.get_width()
-        self.height = self.sprite.get_height()
-        self.radius = self.width*0.5
+    def __init__( self, ownerid, objectid, sprite, moves,
+                  position=Vector2(MID_GROUND,MID_GROUND), 
+                  direction=Vector2(0, -1)
+                ):
+        self.ownerid   = ownerid
+        self.objectid  = objectid
+        self.position  = position
+        self.direction = direction
+        self.sprite = sprite
+        self.moves  = moves
+        self.radius = self.sprite.get_width()*0.5
+
+    def move(self):
+        self.moves = self.moves-1
+        self.position = wrap_ground(self.position + self.velocity)
