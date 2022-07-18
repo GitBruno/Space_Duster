@@ -1,5 +1,7 @@
 # Space Duster
 
+![Title](/assets/sprites/space_duster_512.png)
+
 > A multiplayer python game inspired by Asteroids
 
 ## Objective

@@ -17,6 +17,7 @@ class c_Game:
         self.playground = pygame.Surface((GROUND_SIZE, GROUND_SIZE)) 
         self.background = load_sprite("space", False)
         self.s_bullet = load_sprite('bullet')
+        self.s_title = load_sprite('space_duster_256')
         self.shipMap = {}
         self.bulletMap = {}
 
@@ -116,7 +117,9 @@ class c_Game:
 
     def loop(self):
         # INIT SCREEN BEFORE GETTING UPDATES FROM SERVER
-        self.draw()
+        self.playground.blit(self.background, (0,0))
+        self.screen.blit(self.playground,(-MID_GROUND,-MID_GROUND))
+        self.screen.blit(self.s_title,(0,50))
         pygame.display.flip()
         while True:
             self.sendUserAction()
