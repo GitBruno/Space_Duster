@@ -1,7 +1,6 @@
 import sys, pygame
 from pygame import Vector2
 from pygame.locals import *
-from zmq import FAIL_UNROUTABLE
 from defines import *
 from utilis import load_sprite, infinityBlit
 from models import c_Spaceship, c_GameObject
