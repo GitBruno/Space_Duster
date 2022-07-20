@@ -79,6 +79,10 @@ class s_Spaceship(s_GameObject):
         if( (self.velocity[1] < 0.001) and (self.velocity[1] > -0.001) ):
             self.velocity = (self.velocity[0],0)
     
+    def move(self):
+        #self.alpha = self.alpha - 0.5
+        super().move()
+
     def getData(self):
         return [ self.ownerid, self.objectid, 
                  trunc(self.position[0]),
@@ -142,11 +146,11 @@ class c_Bullet(c_GameObject):
                   direction=Vector2(0, -1)
                 ):
         super().__init__(self, ownerid, objectid, sprite, position, direction)
-        self.moves  = moves
+        self.moves = moves
 
     def move(self):
         self.moves = self.moves-1
-        super().move(self)
+        super().move()
 
 class s_Asteroid(s_GameObject):
     def __init__(self, position, add_asteroid_callback, size=3):

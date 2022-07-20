@@ -24,9 +24,42 @@ class s_Game:
             #        break
             self.asteroids.append(s_Asteroid(get_random_position(), self.asteroids.append))
 
+    def moveItem(self, item):
+        item.move()
+        
+        if hasattr(item,'moves'):
+            if(item.moves <= 0):
+                return False
+        if hasattr(item,'alpha'):
+            if(item.alpha <= 0):
+                return False
+
+        return True
+
+    def moveItems(self, objCont):
+        delKeys = []
+        if type(objCont) is dict:
+            for key, item in objCont.items():
+                if(not self.moveItem(item)):
+                    delKeys.append(key)
+            for key in delKeys:
+                del objCont[key]
+        else: #array
+            for item in objCont:
+                if(not self.moveItem(item)):
+                    delKeys.append(item)
+            for key in delKeys:
+                objCont.remove(key)
+
+    def process_game_logic(self):
+        self.moveItems(self.asteroids)
+        self.moveItems(self.bullets)
+        self.moveItems(self.shipmap)
+
     def loop(self):
         while True:
-            self._update()
+            self.process_game_logic()
+            self.update()
             self.clock.tick(60)
  
     def handle_input(self, message, source):
@@ -72,44 +105,21 @@ class s_Game:
     def addPlayer(self, playerId):
         self.shipmap[playerId] = s_Spaceship(playerId)
 
-    def _sendUpdateMsg(self,key,objArr):
-        delKeys = []
+    def sendUpdateMsg(self, key, objContainer):
         updateMsg = [key,[]]
-        sendMsg = False
 
-        for item in objArr:
-            item.move()
-            if hasattr(item,'moves'):
-                if(item.moves <= 0):
-                    delKeys.append(item)
-            updateMsg[1].append(item.getData())
-            sendMsg = True
+        if type(objContainer) is dict:
+            for key, item in objContainer.items():
+                updateMsg[1].append(item.getData())
+                if hasattr(item,'thruster'):
+                    item.thruster = 0
+        else: # array
+            for item in objContainer:
+                updateMsg[1].append(item.getData())
 
-        for key in delKeys:
-            objArr.remove(key)
+        if(len(updateMsg[1])>0): self.send(updateMsg)
 
-        if(sendMsg) : self.send(updateMsg)
-
-    def _update(self):
-        self._sendUpdateMsg('a',self.asteroids)
-        self._sendUpdateMsg('b',self.bullets)
-
-        update_ships_msg  = ['s',[]]
-        delKeys = []
-        sendMsg = False
-        for key, ship in self.shipmap.items():
-            ship.move()
-            ship.alpha = ship.alpha - 0.5
-            if(ship.alpha > 0):
-                update_ships_msg[1].append(ship.getData())
-                ship.thruster = False
-                sendMsg = True
-            else:
-                ship.alpha = 0
-                delKeys.append(key)
-
-        for key in delKeys:
-            del self.shipmap[key]
-            #self.send(['d', key])
-
-        if (sendMsg) : self.send(update_ships_msg)
+    def update(self):
+        self.sendUpdateMsg('a',self.asteroids)
+        self.sendUpdateMsg('b',self.bullets)
+        self.sendUpdateMsg('s',self.shipmap)

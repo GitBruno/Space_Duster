@@ -12,12 +12,10 @@ def trunc(num):
     return float(('%.8f' % num).rstrip('0').rstrip('.'))
 
 def get_image_path(name):
-    path = f"assets/sprites/{name}.png"
-    return path
+    return f"assets/sprites/{name}.png"
 
 def load_sprite(name, with_alpha=True):
-    path = f"assets/sprites/{name}.png"
-    loaded_sprite = image.load(path)
+    loaded_sprite = image.load(get_image_path(name))
     if with_alpha:
         return loaded_sprite.convert_alpha()
     else:
