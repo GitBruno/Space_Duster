@@ -2,8 +2,9 @@ import sys, pygame
 from pygame import Vector2
 from pygame.locals import *
 from defines import *
-from utilis import load_sprite, infinityBlit
-from models import c_Spaceship, c_GameObject
+from utilis import load_sprite, infinityBlit, get_image_path
+from models import c_Spaceship, c_GameObject, c_Asteroid
+from spritesheet import SpriteSheet
 
 class c_Game:
     def __init__(self, send, screen):
@@ -17,8 +18,10 @@ class c_Game:
         self.background = load_sprite("space", False)
         self.s_bullet = load_sprite('bullet')
         self.s_title = load_sprite('space_duster_256')
+        self.ss_asteroids = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
         self.shipMap = {}
         self.bulletMap = {}
+        self.asteroidMap = {}
 
     def requestId(self):
         if self.idFrame < self.idFrames:
@@ -54,7 +57,7 @@ class c_Game:
         elif is_key_pressed[pygame.K_DOWN]:
             key_updown = 'D'
             action = True
-        if is_key_pressed[pygame.K_RIGHT]    :
+        if is_key_pressed[pygame.K_RIGHT]:
             key_leftright = 'R'
             action = True
         elif is_key_pressed[pygame.K_LEFT]:
@@ -95,6 +98,15 @@ class c_Game:
                         self.bulletMap.pop(objectId)
                 elif moves > 4:
                     self.bulletMap[objectId] = c_GameObject(bullet[0], bullet[1], self.s_bullet, Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
+        
+        if type == 'a':
+            for asteroid in data:
+                objectId = asteroid[1]
+                if objectId in self.asteroidMap:
+                    self.asteroidMap[objectId].update(Vector2(asteroid[2], asteroid[3]))
+                else: # objectid, sprite_sheet, position, direction, size=3
+                    self.asteroidMap[objectId] = c_Asteroid(objectId, self.ss_asteroids, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), asteroid[6])
+
         self.draw()
         pygame.display.flip()
 
@@ -103,6 +115,9 @@ class c_Game:
 
         for key, bullet in self.bulletMap.items():
             bullet.draw(self.playground)
+
+        for key, asteroid in self.asteroidMap.items():
+            asteroid.draw(self.playground)
 
         for key, ship in self.shipMap.items():
             ship.draw(self.playground)

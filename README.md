@@ -52,7 +52,7 @@ Foreign clients can join by specifying the servers ipaddress eg:
 | Id Assignment    | 'id'             | [`int`]                  |
 | Ships Update     | 's'              | [`[Ship Data]`]          |
 | Bullets Update   | 'b'              | [`[Bullet Data]`]        |
-
+| Asteroid Update  | 'b'              | [`[Asteroid Data]`]      |
 
 `Key Data`(array):  
 
@@ -79,7 +79,17 @@ Foreign clients can join by specifying the servers ipaddress eg:
     3. Position Y (float)  
     4. Direction X (Float)  
     5. Direction Y (Float)  
-    6. Moves (int)  
+    6. Moves (int) 
+
+`Asteroid Data`(array):  
+
+    0. OwnerId (int)  
+    1. ObjectId (int)  
+    2. Position X (float)  
+    3. Position Y (float)  
+    4. Direction X (Float)  
+    5. Direction Y (Float)  
+    6. Size (int) 
 
 ### Dependencies
 

@@ -3,7 +3,8 @@ import random
 from defines import *
 from pygame.math import Vector2
 from pygame.transform import rotozoom
-from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id
+from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id, get_random_velocity
+from spritesheet import SpriteSheet
 
 class s_GameObject:
     def __init__(self, ownerid, position, velocity):
@@ -14,6 +15,9 @@ class s_GameObject:
 
     def move(self):
         self.position = wrap_ground(self.position + self.velocity)
+
+    def collides_with(self, other_obj):
+        return self.position.distance_to(other_obj.position) < self.radius + other_obj.radius
 
     def getData(self):
         return [ self.ownerid, self.objectid, 
@@ -137,14 +141,59 @@ class c_Bullet(c_GameObject):
                   position=Vector2(MID_GROUND,MID_GROUND), 
                   direction=Vector2(0, -1)
                 ):
-        self.ownerid   = ownerid
-        self.objectid  = objectid
-        self.position  = position
-        self.direction = direction
-        self.sprite = sprite
+        super().__init__(self, ownerid, objectid, sprite, position, direction)
         self.moves  = moves
-        self.radius = self.sprite.get_width()*0.5
 
     def move(self):
         self.moves = self.moves-1
-        self.position = wrap_ground(self.position + self.velocity)
+        super().move(self)
+
+class s_Asteroid(s_GameObject):
+    def __init__(self, position, add_asteroid_callback, size=3):
+        super().__init__(0, position, get_random_velocity(0.5, 1.5))
+        self.add_asteroid = add_asteroid_callback
+        self.size = size
+
+    def split(self):
+        if self.size > 1:
+            for _ in range(random.randint(2,4)):
+                self.add_asteroid(s_Asteroid(self.position, self.add_asteroid, self.size - 1))
+
+    def getData(self):
+        return [ self.ownerid, self.objectid, 
+                 trunc(self.position[0]),
+                 trunc(self.position[1]),
+                 trunc(self.velocity[0]),
+                 trunc(self.velocity[1]),
+                 self.size]
+
+
+class c_Asteroid(c_GameObject):
+    def __init__(self, objectid, sprite_sheet, position, direction, size=3):
+        self.size = size
+        size_to_scale = {
+            3: 0.7  + random.uniform(0, 0.10),
+            2: 0.5  + random.uniform(0, 0.05),
+            1: 0.25 + random.uniform(0, 0.01)}
+
+        super().__init__(0, objectid, rotozoom(sprite_sheet.image_at((0,0,95,95)), 0, size_to_scale[size]), position, get_random_velocity(0.1, 1))
+
+        self.frames = []
+        for y in range(8):
+            for x in range(8):
+                sy = y*95
+                sx = x*95
+                self.frames.append(rotozoom(sprite_sheet.image_at((sx,sy,95,95)), 0, size_to_scale[size]).convert_alpha())
+
+        self.currentFrame = 0
+        self.framemod = random.randint(0,1)
+
+    def update(self, position):
+        self.position = position
+
+    def draw(self, surface):
+        super().draw(surface)
+        self.sprite = self.frames[(32*self.framemod)+int(self.currentFrame)]
+        self.currentFrame += 0.25
+        if self.currentFrame >= 32:
+            self.currentFrame = 0

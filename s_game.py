@@ -2,7 +2,8 @@ import pygame
 from pygame.math import Vector2
 
 from defines import *
-from models import s_Spaceship, s_Bullet
+from models import s_Spaceship, s_Bullet, s_Asteroid
+from utilis import get_random_position
 
 class s_Game:
     clientCounter = 0
@@ -12,8 +13,16 @@ class s_Game:
         self.shipmap = {}
         self.bullets = []
         self.asteroids = []
-        self.debri = []
-        self.explosions = []
+
+        for _ in range (16):
+            #while True:
+            #    position = get_random_position(self.playground)
+            #    if (
+            #        position.distance_to(self.spaceship.position)
+            #        > self.MIN_ASTEROID_DISTANCE
+            #    ):
+            #        break
+            self.asteroids.append(s_Asteroid(get_random_position(), self.asteroids.append))
 
     def loop(self):
         while True:
@@ -63,39 +72,44 @@ class s_Game:
     def addPlayer(self, playerId):
         self.shipmap[playerId] = s_Spaceship(playerId)
 
-    def _update(self):
-        update_ships_msg  = ['s',[]]
-        update_bullet_msg = ['b',[]]
-        sendShips = False
-        sendBullets = False
-
+    def _sendUpdateMsg(self,key,objArr):
         delKeys = []
-        for b in self.bullets:
-            b.move()
-            if(b.moves <= 0):
-                delKeys.append(b)
-            else:
-                update_bullet_msg[1].append(b.getData())
-                sendBullets = True
+        updateMsg = [key,[]]
+        sendMsg = False
+
+        for item in objArr:
+            item.move()
+            if hasattr(item,'moves'):
+                if(item.moves <= 0):
+                    delKeys.append(item)
+            updateMsg[1].append(item.getData())
+            sendMsg = True
 
         for key in delKeys:
-            self.bullets.remove(key)
+            objArr.remove(key)
 
+        if(sendMsg) : self.send(updateMsg)
+
+    def _update(self):
+        self._sendUpdateMsg('a',self.asteroids)
+        self._sendUpdateMsg('b',self.bullets)
+
+        update_ships_msg  = ['s',[]]
         delKeys = []
+        sendMsg = False
         for key, ship in self.shipmap.items():
             ship.move()
             ship.alpha = ship.alpha - 0.5
             if(ship.alpha > 0):
                 update_ships_msg[1].append(ship.getData())
                 ship.thruster = False
-                sendShips = True
+                sendMsg = True
             else:
                 ship.alpha = 0
                 delKeys.append(key)
 
         for key in delKeys:
             del self.shipmap[key]
-            self.send(['d', key])
+            #self.send(['d', key])
 
-        if (sendShips)  : self.send(update_ships_msg)
-        if (sendBullets): self.send(update_bullet_msg)
+        if (sendMsg) : self.send(update_ships_msg)
