@@ -6,18 +6,33 @@ from pygame.transform import rotozoom
 from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id, get_random_velocity
 from spritesheet import SpriteSheet
 
-class s_GameObject:
-    def __init__(self, ownerid, position, velocity):
-        self.ownerid  = ownerid
-        self.objectid = new_object_id()
+class GameObject:
+    def __init__(self, ownerid, objectid, sprite, 
+                 position=Vector2(MID_GROUND,MID_GROUND),
+                 velocity=Vector2(0, 0),
+                 direction=Vector2(0, -1)):
+        self.ownerid   = ownerid
+        self.objectid  = objectid
+        self.position  = position
+        self.direction = direction
+        self.velocity  = velocity
+        self.sprite    = sprite
+        self.width  = self.sprite.get_width()
+        self.height = self.sprite.get_height()
+        self.radius = self.width*0.5
+
+    def update(self, position):
         self.position = position
-        self.velocity = velocity
 
     def move(self):
         self.position = wrap_ground(self.position + self.velocity)
 
     def collides_with(self, other_obj):
         return self.position.distance_to(other_obj.position) < self.radius + other_obj.radius
+
+    def draw(self, surface):
+        blit_position = self.position - (self.radius,self.radius)
+        infinityBlit(self.sprite, blit_position, surface)
 
     def getData(self):
         return [ self.ownerid, self.objectid, 
@@ -26,33 +41,18 @@ class s_GameObject:
                  trunc(self.velocity[0]),
                  trunc(self.velocity[1])]
 
-class c_GameObject:
-    def __init__(self, ownerid, objectid, sprite, position=Vector2(MID_GROUND,MID_GROUND), direction=Vector2(0, -1)):
-        self.ownerid  = ownerid
-        self.objectid = objectid
-        self.position = position
-        self.direction = direction
-        self.sprite = sprite
+class Spaceship(GameObject):
+    def __init__(self, ownerid, sprites, position=get_random_position(), velocity=Vector2(0, 0), direction=Vector2(0, -1), thruster=False, alpha=255, alive=True, score=0):
+        super().__init__(ownerid, new_object_id(), sprites[0], position, velocity, direction)
+        self.alive     = alive
+        self.alpha     = alpha
+        self.thruster  = thruster
+        self.score  = score
+        self.alive  = True
         self.width  = self.sprite.get_width()
         self.height = self.sprite.get_height()
         self.radius = self.width*0.5
-
-    def update(self, position):
-        self.position = position
-
-    def draw(self, surface):
-        blit_position = self.position - (self.radius,self.radius)
-        infinityBlit(self.sprite, blit_position, surface)
- 
-class s_Spaceship(s_GameObject):
-    def __init__(self, ownerid):
-        self.ownerid   = ownerid
-        self.objectid = new_object_id()
-        self.position  = get_random_position()
-        self.velocity  = Vector2(0, 0)
-        self.direction = Vector2(0, -1) #up
-        self.alpha     = 255
-        self.thruster  = False
+        self.sprite_thrust = sprites[1]
 
     def rotate(self, clockwise=True):
         sign = 1 if clockwise else -1
@@ -83,31 +83,12 @@ class s_Spaceship(s_GameObject):
         #self.alpha = self.alpha - 0.5
         super().move()
 
-    def getData(self):
-        return [ self.ownerid, self.objectid, 
-                 trunc(self.position[0]),
-                 trunc(self.position[1]),
-                 trunc(self.direction[0]), 
-                 trunc(self.direction[1]),
-                 self.thruster, self.alpha]
-
-class c_Spaceship(c_GameObject):
-    def __init__(self, ownerid, position, direction, thruster=0, alpha=0):
-        self.ownerid = ownerid
-        self.position = position
-        self.direction = direction
-        self.alpha = alpha
-        self.thruster = thruster
-        self.sprite_thrust = load_sprite("spaceship_thrust")
-        self.sprite = load_sprite('spaceship')
-        self.width  = self.sprite.get_width()
-        self.height = self.sprite.get_height()
-        self.radius = self.width*0.5
-
-    def update(self, position, direction, thruster):
+    def update(self, position, direction, thruster, alive, score):
         self.position = position
         self.direction = direction
         self.thruster = thruster
+        self.alive = alive
+        self.score = score
         if self.alpha <= 250:
             self.alpha = self.alpha + 5
 
@@ -123,13 +104,26 @@ class c_Spaceship(c_GameObject):
         blit_position = self.position - rotated_surface_size*0.5        
         infinityBlit(rotated_surface, blit_position, toSurface)
 
+    def getData(self):
+        return [ self.ownerid, self.objectid, 
+                 trunc(self.position[0]),
+                 trunc(self.position[1]),
+                 trunc(self.direction[0]), 
+                 trunc(self.direction[1]),
+                 self.thruster, self.alpha,
+                 self.alive, self.score]
 
-class s_Bullet(s_GameObject):
-    moves = random.randrange(60, 120)
+class Bullet(GameObject):
+    def __init__( self, ownerid, objectid, sprite, moves=random.randrange(60, 120),
+                  position=Vector2(MID_GROUND,MID_GROUND), 
+                  direction=Vector2(0, -1)
+                ):
+        super().__init__(ownerid, objectid, sprite, position, direction)
+        self.moves = moves
 
     def move(self):
         self.moves = self.moves-1
-        self.position = wrap_ground(self.position + self.velocity)
+        super().move()
     
     def getData(self):
         return [ self.ownerid, self.objectid, 
@@ -139,49 +133,14 @@ class s_Bullet(s_GameObject):
                  trunc(self.velocity[1]),
                  self.moves]
 
-
-class c_Bullet(c_GameObject):
-    def __init__( self, ownerid, objectid, sprite, moves,
-                  position=Vector2(MID_GROUND,MID_GROUND), 
-                  direction=Vector2(0, -1)
-                ):
-        super().__init__(self, ownerid, objectid, sprite, position, direction)
-        self.moves = moves
-
-    def move(self):
-        self.moves = self.moves-1
-        super().move()
-
-class s_Asteroid(s_GameObject):
-    def __init__(self, position, add_asteroid_callback, size=3):
-        super().__init__(0, position, get_random_velocity(0.5, 1.5))
-        self.add_asteroid = add_asteroid_callback
-        self.size = size
-
-    def split(self):
-        if self.size > 1:
-            for _ in range(random.randint(2,4)):
-                self.add_asteroid(s_Asteroid(self.position, self.add_asteroid, self.size - 1))
-
-    def getData(self):
-        return [ self.ownerid, self.objectid, 
-                 trunc(self.position[0]),
-                 trunc(self.position[1]),
-                 trunc(self.velocity[0]),
-                 trunc(self.velocity[1]),
-                 self.size]
-
-
-class c_Asteroid(c_GameObject):
-    def __init__(self, objectid, sprite_sheet, position, direction, size=3):
+class Asteroid(GameObject):
+    def __init__(self, objectid, sprite_sheet, position, direction, add_asteroid_callback, size=3):
         self.size = size
         size_to_scale = {
             3: 0.7  + random.uniform(0, 0.10),
             2: 0.5  + random.uniform(0, 0.05),
             1: 0.25 + random.uniform(0, 0.01)}
-
-        super().__init__(0, objectid, rotozoom(sprite_sheet.image_at((0,0,95,95)), 0, size_to_scale[size]), position, get_random_velocity(0.1, 1))
-
+        self.sprite_sheet = sprite_sheet
         self.frames = []
         for y in range(8):
             for x in range(8):
@@ -192,8 +151,16 @@ class c_Asteroid(c_GameObject):
         self.currentFrame = 0
         self.framemod = random.randint(0,1)
 
+        super().__init__(0, objectid, self.frames[(32*self.framemod)+int(self.currentFrame)], position, get_random_velocity(0.1, 1))
+        self.add_asteroid = add_asteroid_callback
+
     def update(self, position):
         self.position = position
+
+    def split(self):
+        if self.size > 1:
+            for _ in range(random.randint(2,4)):
+                self.add_asteroid(Asteroid(new_object_id(), self.sprite_sheet, self.position, self.direction, self.add_asteroid, self.size - 1))
 
     def draw(self, surface):
         super().draw(surface)
@@ -201,3 +168,11 @@ class c_Asteroid(c_GameObject):
         self.currentFrame += 0.25
         if self.currentFrame >= 32:
             self.currentFrame = 0
+
+    def getData(self):
+        return [ self.ownerid, self.objectid, 
+                 trunc(self.position[0]),
+                 trunc(self.position[1]),
+                 trunc(self.velocity[0]),
+                 trunc(self.velocity[1]),
+                 self.size]

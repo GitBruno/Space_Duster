@@ -69,7 +69,9 @@ Foreign clients can join by specifying the servers ipaddress eg:
     4. Direction X (Float)  
     5. Direction Y (Float)  
     6. Thruster (Bool)  
-    7. Alpha (0-255)  
+    7. Alpha (0-255)
+    8. Alive (Bool)
+    9. Score (int)
 
 `Bullet Data`(array):  
 

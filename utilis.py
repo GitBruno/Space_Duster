@@ -76,4 +76,3 @@ def updateScore(score):
         file.close()
 
     return last
-

@@ -1,9 +1,14 @@
-import pygame
+import pygame, random
 from pygame.math import Vector2
 
 from defines import *
-from models import s_Spaceship, s_Bullet, s_Asteroid
-from utilis import get_random_position
+from models import Spaceship, Bullet, Asteroid
+from spritesheet import SpriteSheet
+from utilis import get_random_position, new_object_id, load_sprite, get_image_path
+
+pygame.init()
+pygame.display.init()
+pygame.display.set_mode((1,1), pygame.NOFRAME)
 
 class s_Game:
     clientCounter = 0
@@ -14,6 +19,10 @@ class s_Game:
         self.bullets = []
         self.asteroids = []
 
+        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust")]
+        self.s_bullet = load_sprite('bullet')
+        self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
+
         for _ in range (16):
             #while True:
             #    position = get_random_position(self.playground)
@@ -22,7 +31,7 @@ class s_Game:
             #        > self.MIN_ASTEROID_DISTANCE
             #    ):
             #        break
-            self.asteroids.append(s_Asteroid(get_random_position(), self.asteroids.append))
+            self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, get_random_position(), Vector2(0, -1), self.asteroids.append))
 
     def moveItem(self, item):
         item.move()
@@ -37,30 +46,36 @@ class s_Game:
         return True
 
     def moveItems(self, objCont):
-        delKeys = []
         if type(objCont) is dict:
             for key, item in objCont.items():
                 if(not self.moveItem(item)):
-                    delKeys.append(key)
-            for key in delKeys:
-                del objCont[key]
-        else: #array
-            for item in objCont:
+                    del objCont[item]
+        else: #list
+            for item in objCont[:]:
                 if(not self.moveItem(item)):
-                    delKeys.append(item)
-            for key in delKeys:
-                objCont.remove(key)
+                    objCont.remove(item)                
 
     def process_game_logic(self):
         self.moveItems(self.asteroids)
         self.moveItems(self.bullets)
         self.moveItems(self.shipmap)
 
+        for bullet in self.bullets[:]:
+            removeBullet = False
+            for asteroid in self.asteroids[:]:
+                if asteroid.collides_with(bullet):
+                    removeBullet = True
+                    self.shipmap[bullet.ownerid].score = self.shipmap[bullet.ownerid].score + (10-asteroid.size)
+                    asteroid.split()
+                    self.asteroids.remove(asteroid)
+            if(removeBullet):
+                self.bullets.remove(bullet)
+
     def loop(self):
         while True:
             self.process_game_logic()
             self.update()
-            self.clock.tick(60)
+            self.clock.tick(30)
  
     def handle_input(self, message, source):
 
@@ -100,10 +115,11 @@ class s_Game:
                 ship.rotate(clockwise=True)
 
             if(key_bulletshield == 'B'):
-                self.bullets.append(s_Bullet(ship.ownerid, ship.position, ship.direction * BULLET_SPEED + ship.velocity))
+                self.bullets.append(Bullet(ship.ownerid, new_object_id(), self.s_bullet, random.randrange(60, 120),
+                  ship.position, ship.direction * BULLET_SPEED + ship.velocity))
 
     def addPlayer(self, playerId):
-        self.shipmap[playerId] = s_Spaceship(playerId)
+        self.shipmap[playerId] = Spaceship(playerId,self.shipSprites)
 
     def sendUpdateMsg(self, key, objContainer):
         updateMsg = [key,[]]
@@ -123,3 +139,4 @@ class s_Game:
         self.sendUpdateMsg('a',self.asteroids)
         self.sendUpdateMsg('b',self.bullets)
         self.sendUpdateMsg('s',self.shipmap)
+        print("UPDATE MESG SENT")

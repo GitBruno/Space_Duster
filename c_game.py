@@ -3,7 +3,7 @@ from pygame import Vector2
 from pygame.locals import *
 from defines import *
 from utilis import load_sprite, infinityBlit, get_image_path
-from models import c_Spaceship, c_GameObject, c_Asteroid
+from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
 
 class c_Game:
@@ -16,9 +16,13 @@ class c_Game:
         self.screen = screen
         self.playground = pygame.Surface((GROUND_SIZE, GROUND_SIZE)) 
         self.background = load_sprite("space", False)
+
+        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust")]
         self.s_bullet = load_sprite('bullet')
+        self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
+
         self.s_title = load_sprite('space_duster_256')
-        self.ss_asteroids = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
+        
         self.shipMap = {}
         self.bulletMap = {}
         self.asteroidMap = {}
@@ -30,7 +34,7 @@ class c_Game:
             self.idFrame = 0
             self.send(['id_r',0,0])
 
-    def sendUserAction(self):
+    def sendGameEvents(self):
         if self.id == 0:
             self.requestId()
             return
@@ -83,9 +87,9 @@ class c_Game:
             for ship in data:
                 playerId = ship[0]
                 if playerId in self.shipMap:
-                    self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6])
+                    self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[8], ship[9])
                 else:
-                    self.shipMap[playerId] = c_Spaceship(ship[0],Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[7])
+                    self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
 
         if type == 'b':
             for bullet in data:
@@ -97,15 +101,16 @@ class c_Game:
                     else:
                         self.bulletMap.pop(objectId)
                 elif moves > 4:
-                    self.bulletMap[objectId] = c_GameObject(bullet[0], bullet[1], self.s_bullet, Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
+                    self.bulletMap[objectId] = Bullet(bullet[0], bullet[1], self.s_bullet, bullet[6], Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
         
         if type == 'a':
             for asteroid in data:
                 objectId = asteroid[1]
                 if objectId in self.asteroidMap:
                     self.asteroidMap[objectId].update(Vector2(asteroid[2], asteroid[3]))
+
                 else: # objectid, sprite_sheet, position, direction, size=3
-                    self.asteroidMap[objectId] = c_Asteroid(objectId, self.ss_asteroids, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), asteroid[6])
+                    self.asteroidMap[objectId] = Asteroid(objectId, self.asteroidSheet, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), None, size=asteroid[6])
 
         self.draw()
         pygame.display.flip()
@@ -136,5 +141,5 @@ class c_Game:
         self.screen.blit(self.s_title,(0,50))
         pygame.display.flip()
         while True:
-            self.sendUserAction()
+            self.sendGameEvents()
             self.clock.tick(60)
