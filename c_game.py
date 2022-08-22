@@ -92,17 +92,25 @@ class c_Game:
                     self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
 
         if type == 'b':
+            for key, item in self.bulletMap.items():
+                item.touched = False
+
             for bullet in data:
                 objectId = bullet[1]
-                moves = bullet[6]
                 if objectId in self.bulletMap:
-                    if moves > 4: # in case we miss a few frame
-                        self.bulletMap[objectId].update(Vector2(bullet[2], bullet[3]))
-                    else:
-                        self.bulletMap.pop(objectId)
-                elif moves > 4:
+                    self.bulletMap[objectId].update(Vector2(bullet[2], bullet[3]))
+                else:
                     self.bulletMap[objectId] = Bullet(bullet[0], bullet[1], self.s_bullet, bullet[6], Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
-        
+                self.bulletMap[objectId].touched = True
+
+            delete = []
+            for key, item in self.bulletMap.items():
+                if item.touched == False:
+                    delete.append(key)
+            
+            for key in delete:
+                del self.bulletMap[key]
+ 
         if type == 'a':
             for asteroid in data:
                 objectId = asteroid[1]

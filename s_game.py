@@ -133,7 +133,8 @@ class s_Game:
             for item in objContainer:
                 updateMsg[1].append(item.getData())
 
-        if(len(updateMsg[1])>0): self.send(updateMsg)
+        #if(len(updateMsg[1])>0): 
+        self.send(updateMsg)
 
     def update(self):
         self.sendUpdateMsg('a',self.asteroids)

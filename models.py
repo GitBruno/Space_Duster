@@ -120,6 +120,7 @@ class Bullet(GameObject):
                 ):
         super().__init__(ownerid, objectid, sprite, position, direction)
         self.moves = moves
+        self.touched = False
 
     def move(self):
         self.moves = self.moves-1
