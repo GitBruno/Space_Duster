@@ -78,10 +78,6 @@ class Spaceship(GameObject):
             self.velocity = (0,self.velocity[1])
         if( (self.velocity[1] < 0.001) and (self.velocity[1] > -0.001) ):
             self.velocity = (self.velocity[0],0)
-    
-    def move(self):
-        #self.alpha = self.alpha - 0.5
-        super().move()
 
     def update(self, position, direction, thruster, alive, score):
         self.position = position
@@ -114,25 +110,19 @@ class Spaceship(GameObject):
                  self.alive, self.score]
 
 class Bullet(GameObject):
-    def __init__( self, ownerid, objectid, sprite, moves=random.randrange(60, 120),
+    def __init__( self, ownerid, objectid, sprite,
                   position=Vector2(MID_GROUND,MID_GROUND), 
                   direction=Vector2(0, -1)
                 ):
         super().__init__(ownerid, objectid, sprite, position, direction)
-        self.moves = moves
         self.touched = False
 
-    def move(self):
-        self.moves = self.moves-1
-        super().move()
-    
     def getData(self):
         return [ self.ownerid, self.objectid, 
                  trunc(self.position[0]),
                  trunc(self.position[1]),
                  trunc(self.velocity[0]),
-                 trunc(self.velocity[1]),
-                 self.moves]
+                 trunc(self.velocity[1])]
 
 class Asteroid(GameObject):
     def __init__(self, objectid, sprite_sheet, position, direction, add_asteroid_callback, size=3):

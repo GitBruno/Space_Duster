@@ -100,7 +100,7 @@ class c_Game:
                 if objectId in self.bulletMap:
                     self.bulletMap[objectId].update(Vector2(bullet[2], bullet[3]))
                 else:
-                    self.bulletMap[objectId] = Bullet(bullet[0], bullet[1], self.s_bullet, bullet[6], Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
+                    self.bulletMap[objectId] = Bullet(bullet[0], bullet[1], self.s_bullet, Vector2(bullet[2], bullet[3]), Vector2(bullet[4], bullet[5]) )
                 self.bulletMap[objectId].touched = True
 
             delete = []

@@ -23,7 +23,7 @@ class s_Game:
         self.s_bullet = load_sprite('bullet')
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
 
-        for _ in range (16):
+        #for _ in range (16):
             #while True:
             #    position = get_random_position(self.playground)
             #    if (
@@ -31,14 +31,11 @@ class s_Game:
             #        > self.MIN_ASTEROID_DISTANCE
             #    ):
             #        break
-            self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, get_random_position(), Vector2(0, -1), self.asteroids.append))
+            #self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, get_random_position(), Vector2(0, -1), self.asteroids.append))
 
     def moveItem(self, item):
         item.move()
-        
-        if hasattr(item,'moves'):
-            if(item.moves <= 0):
-                return False
+
         if hasattr(item,'alpha'):
             if(item.alpha <= 0):
                 return False
@@ -75,7 +72,7 @@ class s_Game:
         while True:
             self.process_game_logic()
             self.update()
-            self.clock.tick(30)
+            self.clock.tick(20)
  
     def handle_input(self, message, source):
 
@@ -115,7 +112,7 @@ class s_Game:
                 ship.rotate(clockwise=True)
 
             if(key_bulletshield == 'B'):
-                self.bullets.append(Bullet(ship.ownerid, new_object_id(), self.s_bullet, random.randrange(60, 120),
+                self.bullets.append(Bullet(ship.ownerid, new_object_id(), self.s_bullet,
                   ship.position, ship.direction * BULLET_SPEED + ship.velocity))
 
     def addPlayer(self, playerId):
@@ -133,11 +130,11 @@ class s_Game:
             for item in objContainer:
                 updateMsg[1].append(item.getData())
 
-        #if(len(updateMsg[1])>0): 
-        self.send(updateMsg)
+        if(len(updateMsg[1])>0): 
+            self.send(updateMsg)
 
     def update(self):
         self.sendUpdateMsg('a',self.asteroids)
-        self.sendUpdateMsg('b',self.bullets)
         self.sendUpdateMsg('s',self.shipmap)
+        self.sendUpdateMsg('b',self.bullets)
         print("UPDATE MESG SENT")
