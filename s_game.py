@@ -23,15 +23,18 @@ class s_Game:
         self.s_bullet = load_sprite('bullet')
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
 
-        #for _ in range (16):
+        for _ in range (16):
+            self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, get_random_position(), Vector2(0, -1), self.asteroids.append))
+
             #while True:
-            #    position = get_random_position(self.playground)
-            #    if (
-            #        position.distance_to(self.spaceship.position)
-            #        > self.MIN_ASTEROID_DISTANCE
-            #    ):
+            #    position = get_random_position()
+            #    myBreak = False
+            #    for ship in self.shipmap:
+            #        if ( position.distance_to(ship.position) > MIN_ASTEROID_DISTANCE):
+            #            myBreak = True
+            #    if(myBreak):
             #        break
-            #self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, get_random_position(), Vector2(0, -1), self.asteroids.append))
+            #self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, position, Vector2(0, -1), self.asteroids.append))
 
     def moveItem(self, item):
         item.move()
@@ -130,8 +133,7 @@ class s_Game:
             for item in objContainer:
                 updateMsg[1].append(item.getData())
 
-        if(len(updateMsg[1])>0): 
-            self.send(updateMsg)
+        self.send(updateMsg)
 
     def update(self):
         self.sendUpdateMsg('a',self.asteroids)

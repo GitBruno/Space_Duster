@@ -112,13 +112,24 @@ class c_Game:
                 del self.bulletMap[key]
  
         if type == 'a':
+            for key, item in self.asteroidMap.items():
+                item.touched = False
+
             for asteroid in data:
                 objectId = asteroid[1]
                 if objectId in self.asteroidMap:
                     self.asteroidMap[objectId].update(Vector2(asteroid[2], asteroid[3]))
-
                 else: # objectid, sprite_sheet, position, direction, size=3
                     self.asteroidMap[objectId] = Asteroid(objectId, self.asteroidSheet, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), None, size=asteroid[6])
+                self.asteroidMap[objectId].touched = True
+
+            delete = []
+            for key, item in self.asteroidMap.items():
+                if item.touched == False:
+                    delete.append(key)
+            
+            for key in delete:
+                del self.asteroidMap[key]
 
         self.draw()
         pygame.display.flip()

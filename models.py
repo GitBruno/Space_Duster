@@ -61,6 +61,15 @@ class Spaceship(GameObject):
 
     def accelerate(self):
         self.velocity += self.direction * SHIP_ACCELERATION
+        if( self.velocity[0] >  SHIP_MAX_SPEED):
+            self.velocity[0] =  SHIP_MAX_SPEED
+        if( self.velocity[0] < -SHIP_MAX_SPEED):
+            self.velocity[0] = -SHIP_MAX_SPEED
+        if( self.velocity[1] >  SHIP_MAX_SPEED):
+            self.velocity[1] =  SHIP_MAX_SPEED
+        if( self.velocity[1] < -SHIP_MAX_SPEED):
+            self.velocity[1] = -SHIP_MAX_SPEED
+        
         self.thruster = True
     
     def slow_down(self):
