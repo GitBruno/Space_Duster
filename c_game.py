@@ -19,6 +19,7 @@ class c_Game:
 
         self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust")]
         self.s_bullet = load_sprite('bullet')
+        self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
 
         self.s_title = load_sprite('space_duster_256')
@@ -26,6 +27,7 @@ class c_Game:
         self.shipMap = {}
         self.bulletMap = {}
         self.asteroidMap = {}
+        self.debri = []
 
     def requestId(self):
         if self.idFrame < self.idFrames:
@@ -120,14 +122,15 @@ class c_Game:
                 if objectId in self.asteroidMap:
                     self.asteroidMap[objectId].update(Vector2(asteroid[2], asteroid[3]))
                 else: # objectid, sprite_sheet, position, direction, size=3
-                    self.asteroidMap[objectId] = Asteroid(objectId, self.asteroidSheet, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), None, size=asteroid[6])
+                    self.asteroidMap[objectId] = Asteroid(objectId, self.asteroidSheet, self.s_debri, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), self.asteroidMap.update, self.debri.append, size=asteroid[6])
                 self.asteroidMap[objectId].touched = True
 
             delete = []
             for key, item in self.asteroidMap.items():
                 if item.touched == False:
+                    item.hit()
                     delete.append(key)
-            
+
             for key in delete:
                 del self.asteroidMap[key]
 
@@ -145,6 +148,12 @@ class c_Game:
 
         for key, ship in self.shipMap.items():
             ship.draw(self.playground)
+
+        for dust in self.debri[:]:
+            dust.draw(self.playground)
+            dust.move()
+            if dust.moves < 1:
+               self.debri.remove(dust) 
 
         if self.id in self.shipMap:
             centre_position = (-self.shipMap[self.id].position[0]+MID_SCREEN,-self.shipMap[self.id].position[1]+MID_SCREEN)

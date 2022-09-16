@@ -81,7 +81,6 @@ Foreign clients can join by specifying the servers ipaddress eg:
     3. Position Y (float)  
     4. Direction X (Float)  
     5. Direction Y (Float)  
-    6. Moves (int) 
 
 `Asteroid Data`(array):  
 

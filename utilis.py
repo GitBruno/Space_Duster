@@ -1,4 +1,4 @@
-import random
+import random, math
 from defines import *
 from pygame import Color, image, mixer
 from pygame.math import Vector2
@@ -56,6 +56,35 @@ def infinityBlit(sprite, blit_position, toSurface):
     toSurface.blit(sprite, tuple(map(sum, zip(blit_position, (-GROUND_SIZE, GROUND_SIZE)))))
 
     toSurface.blit(sprite, blit_position)
+
+def getDistance(p1,p2):
+    return math.hypot(p1[0]-p2[0], p1[1]-p2[1])
+
+def getGroundMargin(position):
+    return {
+        "top": position[1], 
+        "right": GROUND_SIZE - position[0],
+        "bottom": GROUND_SIZE - position[1],
+        "left": position[0]
+    }
+
+def getInfinityDistance(p1, p2):
+    p1_normal  = Vector2(p1[0]+GROUND_SIZE,p1[1]+GROUND_SIZE)
+    p2_normal  = Vector2(p2[0]+GROUND_SIZE,p2[1]+GROUND_SIZE)
+
+    top_left   = getDistance(p1_normal, p2)
+    top_cent   = getDistance(p1_normal, (p2_normal[0],p2[1]) )
+    top_right  = getDistance(p1_normal, (p2_normal[0]+GROUND_SIZE,p2[1]) )
+
+    cent_left  = getDistance(p1_normal, (p2[0],p2_normal[1]) )
+    cent_cent  = getDistance(p1_normal, p2_normal)
+    cent_right = getDistance(p1_normal, (p2_normal[0]+GROUND_SIZE,p2_normal[1]))
+
+    bot_left   = getDistance(p1_normal, (p2[0], p2_normal[1]+GROUND_SIZE) )
+    bot_cent   = getDistance(p1_normal, (p2_normal[0], p2_normal[1]+GROUND_SIZE) )
+    bot_right  = getDistance(p1_normal, (p2_normal[0]+GROUND_SIZE, p2_normal[1]+GROUND_SIZE) )
+
+    return min(top_left,top_cent,top_right,cent_left,cent_cent,cent_right,bot_left,bot_cent,bot_right)
 
 def blit_text(surface, text, font, offset=(0,0), color=Color("white")):
     text_surface = font.render(text, True, color)

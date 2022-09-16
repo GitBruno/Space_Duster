@@ -4,7 +4,7 @@ from pygame.math import Vector2
 from defines import *
 from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
-from utilis import get_random_position, new_object_id, load_sprite, get_image_path
+from utilis import get_random_position, new_object_id, load_sprite, get_image_path, getInfinityDistance
 
 pygame.init()
 pygame.display.init()
@@ -17,14 +17,17 @@ class s_Game:
         self.clock = pygame.time.Clock()
         self.shipmap = {}
         self.bullets = []
-        self.asteroids = []
+        self.asteroids = {}
+        self.debri = []
 
         self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust")]
         self.s_bullet = load_sprite('bullet')
+        self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
 
         for _ in range (16):
-            self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, get_random_position(), Vector2(0, -1), self.asteroids.append))
+            _ID=new_object_id()
+            self.asteroids.update({_ID : Asteroid(_ID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
 
             #while True:
             #    position = get_random_position()
@@ -62,14 +65,19 @@ class s_Game:
 
         for bullet in self.bullets[:]:
             removeBullet = False
-            for asteroid in self.asteroids[:]:
+            delete = []
+            for key, asteroid in self.asteroids.items():
                 if asteroid.collides_with(bullet):
                     removeBullet = True
                     self.shipmap[bullet.ownerid].score = self.shipmap[bullet.ownerid].score + (10-asteroid.size)
-                    asteroid.split()
-                    self.asteroids.remove(asteroid)
-            if(removeBullet):
+                    delete.append(key)
+            
+            if(removeBullet or getInfinityDistance(self.shipmap[bullet.ownerid].position, bullet.position) > SHIP_MAX_BULLET_DIST):
                 self.bullets.remove(bullet)
+            
+            for key in delete:
+                self.asteroids[key].split()
+                del self.asteroids[key]
 
     def loop(self):
         while True:

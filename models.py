@@ -134,13 +134,14 @@ class Bullet(GameObject):
                  trunc(self.velocity[1])]
 
 class Asteroid(GameObject):
-    def __init__(self, objectid, sprite_sheet, position, direction, add_asteroid_callback, size=3):
+    def __init__(self, objectid, sprite_sheet, debri_sprite, position, direction, add_asteroid_callback, add_debri_callback, size=3):
         self.size = size
         size_to_scale = {
             3: 0.7  + random.uniform(0, 0.10),
             2: 0.5  + random.uniform(0, 0.05),
             1: 0.25 + random.uniform(0, 0.01)}
         self.sprite_sheet = sprite_sheet
+        self.debri_sprite = debri_sprite
         self.frames = []
         for y in range(8):
             for x in range(8):
@@ -153,6 +154,7 @@ class Asteroid(GameObject):
 
         super().__init__(0, objectid, self.frames[(32*self.framemod)+int(self.currentFrame)], position, get_random_velocity(0.1, 1))
         self.add_asteroid = add_asteroid_callback
+        self.add_debri = add_debri_callback
 
     def update(self, position):
         self.position = position
@@ -160,7 +162,13 @@ class Asteroid(GameObject):
     def split(self):
         if self.size > 1:
             for _ in range(random.randint(2,4)):
-                self.add_asteroid(Asteroid(new_object_id(), self.sprite_sheet, self.position, self.direction, self.add_asteroid, self.size - 1))
+                _id = new_object_id()
+                self.add_asteroid({_id : Asteroid(_id, self.sprite_sheet, self.debri_sprite, self.position, self.direction, self.add_asteroid, self.add_debri, self.size - 1) } )
+
+    def hit(self):
+        for dust in range (random.randint(20,60)):
+            self.add_debri(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(0.5, 1.5)))
+
 
     def draw(self, surface):
         super().draw(surface)
@@ -176,3 +184,12 @@ class Asteroid(GameObject):
                  trunc(self.velocity[0]),
                  trunc(self.velocity[1]),
                  self.size]
+
+class Debri(GameObject):
+    def __init__(self, ownerid, debri_sprite, position, velocity):
+        self.moves = random.randint(5,50)
+        super().__init__(ownerid, new_object_id(), debri_sprite, position, velocity)
+
+    def move(self):
+        self.moves = self.moves-1;
+        self.position = wrap_ground(self.position + self.velocity)
