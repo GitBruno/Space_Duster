@@ -2,7 +2,7 @@ import sys, pygame
 from pygame import Vector2
 from pygame.locals import *
 from defines import *
-from utilis import load_sprite, infinityBlit, get_image_path
+from utilis import load_sprite, infinityBlit, get_image_path, load_sound
 from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
 
@@ -28,6 +28,11 @@ class c_Game:
         self.bulletMap = {}
         self.asteroidMap = {}
         self.debri = []
+
+        self.hit_sound = load_sound("bangSmall")
+        self.shoot_sound = load_sound("fire")
+        self.thrust_sound = load_sound("thrust")
+        self.dead_sound = load_sound("bangLarge")
 
     def requestId(self):
         if self.idFrame < self.idFrames:
@@ -59,6 +64,7 @@ class c_Game:
         if is_key_pressed[pygame.K_UP]:
             key_updown = 'U'
             action = True
+            self.thrust_sound.play()
             #self.push_Cam()
         elif is_key_pressed[pygame.K_DOWN]:
             key_updown = 'D'
@@ -129,6 +135,7 @@ class c_Game:
             for key, item in self.asteroidMap.items():
                 if item.touched == False:
                     item.hit()
+                    self.hit_sound.play()
                     delete.append(key)
 
             for key in delete:
