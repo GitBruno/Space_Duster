@@ -13,9 +13,9 @@ class GameObject:
                  direction=Vector2(0, -1)):
         self.ownerid   = ownerid
         self.objectid  = objectid
-        self.position  = position
-        self.direction = direction
-        self.velocity  = velocity
+        self.position  = position.copy()
+        self.direction = direction.copy()
+        self.velocity  = velocity.copy()
         self.sprite    = sprite
         self.width  = self.sprite.get_width()
         self.height = self.sprite.get_height()
