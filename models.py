@@ -3,7 +3,7 @@ import random
 from defines import *
 from pygame.math import Vector2
 from pygame.transform import rotozoom
-from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id, get_random_velocity
+from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id, get_random_velocity, get_random_direction, get_image_path
 from spritesheet import SpriteSheet
 
 class GameObject:
@@ -42,22 +42,27 @@ class GameObject:
                  trunc(self.velocity[1])]
 
 class Spaceship(GameObject):
-    def __init__(self, ownerid, sprites, position=get_random_position(), velocity=Vector2(0, 0), direction=Vector2(0, -1), thruster=False, alpha=255, alive=True, score=0):
+
+    def __init__(self, ownerid, sprites, position=get_random_position(), velocity=Vector2(0, 0), direction=Vector2(0, -1), thruster=False, alpha=255, dead=False, score=0):
         super().__init__(ownerid, new_object_id(), sprites[0], position, velocity, direction)
-        self.alive     = alive
-        self.alpha     = alpha
-        self.thruster  = thruster
+        self.dead     = dead
+        self.alpha    = alpha
+        self.thruster = thruster
         self.score  = score
-        self.alive  = True
         self.width  = self.sprite.get_width()
         self.height = self.sprite.get_height()
         self.radius = self.width*0.5
         self.sprite_thrust = sprites[1]
+        self.ss_explosion = sprites[2]
+        self.explframes = []
+        for i in range(7):
+            self.explframes.append(self.ss_explosion.image_at((i*41,0,41,41)))
+
+        self.currentFrame = 0
 
     def rotate(self, clockwise=True):
         sign = 1 if clockwise else -1
-        angle = SHIP_MANEUVERABILITY * sign
-        self.direction.rotate_ip(angle)
+        self.direction.rotate_ip(SHIP_MANEUVERABILITY * sign)
 
     def accelerate(self):
         self.velocity += self.direction * SHIP_ACCELERATION
@@ -88,26 +93,36 @@ class Spaceship(GameObject):
         if( (self.velocity[1] < 0.001) and (self.velocity[1] > -0.001) ):
             self.velocity = (self.velocity[0],0)
 
-    def update(self, position, direction, thruster, alive, score):
+    def update(self, position, direction, thruster, dead, score):
         self.position = position
         self.direction = direction
         self.thruster = thruster
-        self.alive = alive
+        self.dead = dead
         self.score = score
         if self.alpha <= 250:
             self.alpha = self.alpha + 5
 
     def draw(self, toSurface):
-        angle = self.direction.angle_to(Vector2(0,-1))
-
-        if self.thruster:
-            rotated_surface = rotozoom(self.sprite_thrust, angle, 1.0)
+        if self.dead == 2:
+            return
+        if self.dead == 1:
+            self.velocity = (0,0)
+            infinityBlit(self.explframes[int(self.currentFrame)], tuple(map(sum, zip(self.position, (-8,-5)))), toSurface)
+            self.currentFrame+=0.3
+            if self.currentFrame >= 6:
+                self.dead = 2
+                self.currentFrame = 0
         else:
-            rotated_surface = rotozoom(self.sprite, angle, 1.0)
+            angle = self.direction.angle_to(Vector2(0,-1))
 
-        rotated_surface_size = Vector2(rotated_surface.get_size())
-        blit_position = self.position - rotated_surface_size*0.5        
-        infinityBlit(rotated_surface, blit_position, toSurface)
+            if self.thruster:
+                rotated_surface = rotozoom(self.sprite_thrust, angle, 1.0)
+            else:
+                rotated_surface = rotozoom(self.sprite, angle, 1.0)
+
+            rotated_surface_size = Vector2(rotated_surface.get_size())
+            blit_position = self.position - rotated_surface_size*0.5        
+            infinityBlit(rotated_surface, blit_position, toSurface)
 
     def getData(self):
         return [ self.ownerid, self.objectid, 
@@ -116,7 +131,7 @@ class Spaceship(GameObject):
                  trunc(self.direction[0]), 
                  trunc(self.direction[1]),
                  self.thruster, self.alpha,
-                 self.alive, self.score]
+                 self.dead, self.score]
 
 class Bullet(GameObject):
     def __init__( self, ownerid, objectid, sprite,
@@ -167,8 +182,7 @@ class Asteroid(GameObject):
 
     def hit(self):
         for dust in range (random.randint(20,60)):
-            self.add_debri(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(0.5, 1.5)))
-
+            self.add_debri(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(0.5, 1.5), get_random_direction(self.direction, PARTICLE_ANGLE_WIDTH) ))
 
     def draw(self, surface):
         super().draw(surface)
@@ -186,9 +200,9 @@ class Asteroid(GameObject):
                  self.size]
 
 class Debri(GameObject):
-    def __init__(self, ownerid, debri_sprite, position, velocity):
+    def __init__(self, ownerid, debri_sprite, position, velocity, direction):
         self.moves = random.randint(5,50)
-        super().__init__(ownerid, new_object_id(), debri_sprite, position, velocity)
+        super().__init__(ownerid, new_object_id(), debri_sprite, position, velocity, direction)
 
     def move(self):
         self.moves = self.moves-1;

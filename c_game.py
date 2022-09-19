@@ -17,7 +17,7 @@ class c_Game:
         self.playground = pygame.Surface((GROUND_SIZE, GROUND_SIZE)) 
         self.background = load_sprite("space", False)
 
-        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust")]
+        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
         self.s_bullet = load_sprite('bullet')
         self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
@@ -95,7 +95,10 @@ class c_Game:
             for ship in data:
                 playerId = ship[0]
                 if playerId in self.shipMap:
-                    self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[8], ship[9])
+                    if(self.shipMap[playerId].dead):
+                        self.shipMap[playerId].alpha = 0
+                    else:
+                        self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[8], ship[9])
                 else:
                     self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
 

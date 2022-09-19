@@ -20,7 +20,7 @@ class s_Game:
         self.asteroids = {}
         self.debri = []
 
-        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust")]
+        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
         self.s_bullet = load_sprite('bullet')
         self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
@@ -65,19 +65,29 @@ class s_Game:
 
         for bullet in self.bullets[:]:
             removeBullet = False
-            delete = []
+            deleteAstroids = []
+
             for key, asteroid in self.asteroids.items():
                 if asteroid.collides_with(bullet):
                     removeBullet = True
                     self.shipmap[bullet.ownerid].score = self.shipmap[bullet.ownerid].score + (10-asteroid.size)
-                    delete.append(key)
+                    deleteAstroids.append(key)
+            
+            if (removeBullet == False):
+                for key, ship in self.shipmap.items():
+                    if ship.collides_with(bullet):
+                        self.shipmap[bullet.ownerid].score += 100 
+                        ship.dead = True
             
             if(removeBullet or getInfinityDistance(self.shipmap[bullet.ownerid].position, bullet.position) > SHIP_MAX_BULLET_DIST):
                 self.bullets.remove(bullet)
             
-            for key in delete:
+            for key in deleteAstroids:
                 self.asteroids[key].split()
                 del self.asteroids[key]
+
+
+
 
     def loop(self):
         while True:
@@ -91,7 +101,8 @@ class s_Game:
 
         if type == 'id_r':
             self.clientCounter += 1
-            self.send(["id", self.clientCounter],source[0])
+            #self.send(["id", self.clientCounter],source[0])
+            self.send(["id", self.clientCounter])
             return
 
         if playerId == 0: return

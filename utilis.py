@@ -38,6 +38,11 @@ def get_random_velocity(min_speed, max_speed):
     angle = random.randrange(0, 360)
     return Vector2(speed, 0).rotate(angle)
 
+def get_random_direction(start_dir, max_displacement):
+    direction = start_dir.copy()
+    direction.rotate_ip(random.uniform(-max_displacement, max_displacement))
+    return direction
+
 def load_sound(name):
     path = f"assets/sounds/{name}.wav"
     return mixer.Sound(path)
