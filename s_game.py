@@ -86,6 +86,10 @@ class s_Game:
                 self.asteroids[key].split()
                 del self.asteroids[key]
 
+        for key, ship in self.shipmap.items():
+            for key, asteroid in self.asteroids.items():
+                if asteroid.collides_with(ship):
+                    ship.dead = True
 
 
 

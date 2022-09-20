@@ -107,7 +107,11 @@ class Spaceship(GameObject):
             return
         if self.dead == 1:
             self.velocity = (0,0)
-            infinityBlit(self.explframes[int(self.currentFrame)], tuple(map(sum, zip(self.position, (-8,-5)))), toSurface)
+            angle = self.direction.angle_to(Vector2(0,-1))
+            rotated_surface = rotozoom(self.explframes[int(self.currentFrame)], angle, 1.0)
+            rotated_surface_size = Vector2(rotated_surface.get_size())
+            blit_position = self.position - rotated_surface_size*0.5
+            infinityBlit(rotated_surface, blit_position, toSurface)
             self.currentFrame+=0.3
             if self.currentFrame >= 6:
                 self.dead = 2
