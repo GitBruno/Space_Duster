@@ -3,7 +3,7 @@ import random
 from defines import *
 from pygame.math import Vector2
 from pygame.transform import rotozoom
-from utilis import wrap_ground, get_random_position, infinityBlit, load_sprite, trunc, new_object_id, get_random_velocity, get_random_direction, get_image_path
+from utilis import *
 from spritesheet import SpriteSheet
 
 class GameObject:
@@ -42,7 +42,7 @@ class GameObject:
                  trunc(self.velocity[1])]
 
 class Spaceship(GameObject):
-
+    deadsound = load_sound("bangLarge")
     def __init__(self, ownerid, sprites, position=get_random_position(), velocity=Vector2(0, 0), direction=Vector2(0, -1), thruster=False, alpha=255, dead=False, score=0):
         super().__init__(ownerid, new_object_id(), sprites[0], position, velocity, direction)
         self.dead     = dead
@@ -112,7 +112,9 @@ class Spaceship(GameObject):
             rotated_surface_size = Vector2(rotated_surface.get_size())
             blit_position = self.position - rotated_surface_size*0.5
             infinityBlit(rotated_surface, blit_position, toSurface)
-            self.currentFrame+=0.3
+            if self.currentFrame == 0:
+                channel1.play(self.deadsound)
+            self.currentFrame+=0.15
             if self.currentFrame >= 6:
                 self.dead = 2
                 self.currentFrame = 0

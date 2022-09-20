@@ -32,7 +32,6 @@ class c_Game:
         self.hit_sound = load_sound("bangSmall")
         self.shoot_sound = load_sound("fire")
         self.thrust_sound = load_sound("thrust")
-        self.dead_sound = load_sound("bangLarge")
 
     def requestId(self):
         if self.idFrame < self.idFrames:

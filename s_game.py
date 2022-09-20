@@ -162,4 +162,4 @@ class s_Game:
         self.sendUpdateMsg('a',self.asteroids)
         self.sendUpdateMsg('s',self.shipmap)
         self.sendUpdateMsg('b',self.bullets)
-        print("UPDATE MESG SENT")
+        #print("UPDATE MESG SENT")

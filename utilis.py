@@ -3,6 +3,11 @@ from defines import *
 from pygame import Color, image, mixer
 from pygame.math import Vector2
 
+mixer.init(frequency = 44100, size = -16, channels = 3, buffer = 2**12)
+channel1 = mixer.Channel(0)
+channel2 = mixer.Channel(1)
+
+
 def new_object_id():
     global OBJECT_COUNTER, MAX_OBJECTS
     OBJECT_COUNTER = (OBJECT_COUNTER + 1)%MAX_OBJECTS
