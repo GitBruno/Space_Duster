@@ -70,7 +70,7 @@ Foreign clients can join by specifying the servers ipaddress eg:
     5. Direction Y (Float)  
     6. Thruster (Bool)  
     7. Alpha (0-255)
-    8. Alive (Bool)
+    8. Dead (0-2) False, True Animating, True
     9. Score (int)
 
 `Bullet Data`(array):  

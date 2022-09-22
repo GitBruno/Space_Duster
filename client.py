@@ -26,6 +26,7 @@ class DustClient:
         self.game = c_Game(self.send, screen)
         self.rThread = threading.Thread(target=self.receive, name="receive_loop")
         self.rThread.start()
+        self.game.loop()
 
     def receive(self):
         while True:
@@ -36,4 +37,3 @@ class DustClient:
         self.sSocket.sendto(msgpack.packb(message), (self.server_address, SERVER_PORT))
 
 client = DustClient(SERVER_ADDRESS, screen)
-client.game.loop()

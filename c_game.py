@@ -51,9 +51,12 @@ class c_Game:
         action = False
 
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == QUIT or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+            ):
                 pygame.quit()
                 sys.exit()
+
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 key_bulletshield = 'B'
                 action = True
@@ -94,11 +97,9 @@ class c_Game:
             for ship in data:
                 playerId = ship[0]
                 if playerId in self.shipMap:
-                    if(self.shipMap[playerId].dead):
-                        self.shipMap[playerId].alpha = 0
-                    else:
+                    if(self.shipMap[playerId].dead == False):
                         self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[8], ship[9])
-                else:
+                elif(ship[8] == False): # Not dead
                     self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
 
         if type == 'b':

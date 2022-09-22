@@ -77,8 +77,8 @@ class Spaceship(GameObject):
         
         self.thruster = True
     
-    def slow_down(self):
-        DEAC = SHIP_ACCELERATION*0.25
+    def slow_down(self, deacc=0.25):
+        DEAC = SHIP_ACCELERATION*deacc
         if(self.velocity[0] >= SHIP_ACCELERATION):
             self.velocity = (self.velocity[0]-DEAC,self.velocity[1]) 
         if(self.velocity[1] >= SHIP_ACCELERATION):
@@ -131,6 +131,7 @@ class Spaceship(GameObject):
             infinityBlit(rotated_surface, blit_position, toSurface)
 
     def getData(self):
+        self.slow_down(0.15)
         return [ self.ownerid, self.objectid, 
                  trunc(self.position[0]),
                  trunc(self.position[1]),
