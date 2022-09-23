@@ -7,8 +7,16 @@ from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
 
 class c_Game:
+
     def __init__(self, send, screen):
         self.clock = pygame.time.Clock()
+        self.joystick = None
+        self.button1_fresh = True
+        self.button2_fresh = True
+        if pygame.joystick.get_count() > 0:
+            self.joystick = pygame.joystick.Joystick(0)
+            self.joystick.init()
+
         self.id = 0
         self.idFrame  = 0
         self.idFrames = 120
@@ -61,6 +69,7 @@ class c_Game:
                 key_bulletshield = 'B'
                 action = True
 
+
         is_key_pressed = pygame.key.get_pressed()
 
         if is_key_pressed[pygame.K_UP]:
@@ -80,6 +89,41 @@ class c_Game:
         if is_key_pressed[pygame.K_LSHIFT] or is_key_pressed[pygame.K_RSHIFT]:
             key_bulletshield = 'S'
             action = True
+
+        if self.joystick:
+            axisX = round(self.joystick.get_axis(0),1)
+            axisY = round(self.joystick.get_axis(1),1)
+            button1 = self.joystick.get_button(0)
+            button2 = self.joystick.get_button(1)
+
+            if (button2):
+                if(self.button2_fresh):
+                    self.button2_fresh = False
+                    # Do Something
+            else:
+                self.button2_fresh = True
+
+            if (button1):
+                if(self.button1_fresh):
+                    key_bulletshield = 'B'
+                    action = True
+                    self.button1_fresh = False
+            else:
+                self.button1_fresh = True
+
+            if (axisX < 0):
+                key_leftright = 'L'
+                action = True
+            elif (axisX > 0):
+                key_leftright = 'R'
+                action = True
+            if (axisY > 0):
+                key_updown = 'D'
+                action = True
+            elif (axisY < 0):
+                key_updown = 'U'
+                self.thrust_sound.play()
+                action = True
 
         if action == True:
             msg = ['k', self.id, [key_updown, key_leftright, key_bulletshield]]

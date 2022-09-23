@@ -131,7 +131,7 @@ class Spaceship(GameObject):
             infinityBlit(rotated_surface, blit_position, toSurface)
 
     def getData(self):
-        self.slow_down(0.15)
+        self.slow_down(SHIP_DRAG)
         return [ self.ownerid, self.objectid, 
                  trunc(self.position[0]),
                  trunc(self.position[1]),
