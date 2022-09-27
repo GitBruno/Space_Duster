@@ -24,6 +24,7 @@ class c_Game:
         self.screen = screen
         self.playground = pygame.Surface((GROUND_SIZE, GROUND_SIZE)) 
         self.background = load_sprite("space", False)
+        self.cam_offset = (0,0)
 
         self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
         self.s_bullet = load_sprite('bullet')
@@ -42,11 +43,13 @@ class c_Game:
         self.thrust_sound = load_sound("thrust")
 
     def requestId(self):
-        if self.idFrame < self.idFrames:
+        if(self.idFrame == 0):
+            self.send(['id_r',0,0])
+            self.idFrame = 1
+        elif self.idFrame < self.idFrames:
             self.idFrame = self.idFrame+1
         else:
             self.idFrame = 0
-            self.send(['id_r',0,0])
 
     def sendGameEvents(self):
         if self.id == 0:
@@ -76,7 +79,7 @@ class c_Game:
             key_updown = 'U'
             action = True
             self.thrust_sound.play()
-            #self.push_Cam()
+            self.push_Cam()
         elif is_key_pressed[pygame.K_DOWN]:
             key_updown = 'D'
             action = True
@@ -123,6 +126,7 @@ class c_Game:
             elif (axisY < 0):
                 key_updown = 'U'
                 self.thrust_sound.play()
+                self.push_Cam()
                 action = True
 
         if action == True:
@@ -191,6 +195,26 @@ class c_Game:
         self.draw()
         pygame.display.flip()
 
+    def push_Cam(self):
+        ## Give the cam a push on keypress
+        if self.id in self.shipMap:
+            myship = self.shipMap[self.id]
+            if(myship.direction[0] > 0): # positive movement
+                if(self.cam_offset[0] > -(SCREEN_SIZE*0.4)):
+                    self.cam_offset = (self.cam_offset[0]-(myship.direction[0]),self.cam_offset[1])
+
+            if(myship.direction[0] < 0): # negative movement
+                if(self.cam_offset[0] < SCREEN_SIZE*0.4):
+                    self.cam_offset = (self.cam_offset[0]+(abs(myship.direction[0])),self.cam_offset[1])
+
+            if(myship.direction[1] > 0): # positive movement
+                if(self.cam_offset[1] > -SCREEN_SIZE*0.4):
+                    self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-(abs(myship.direction[1])))
+
+            if(myship.direction[1] < 0): # negative movement
+                if(self.cam_offset[1] < SCREEN_SIZE*0.4):
+                    self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+(abs(myship.direction[1])))
+
     def draw(self):
         self.playground.blit(self.background, (0,0))
 
@@ -209,10 +233,23 @@ class c_Game:
             if dust.moves < 1:
                self.debri.remove(dust) 
 
+        # Keep centering slowly
+        if(self.cam_offset[0] > 1):
+            self.cam_offset = (self.cam_offset[0]-0.25,self.cam_offset[1])
+        elif(self.cam_offset[0] < 1):
+            self.cam_offset = (self.cam_offset[0]+0.25,self.cam_offset[1])
+        if(self.cam_offset[1] > 1):
+            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-0.25)
+        elif(self.cam_offset[1] < 1):
+            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+0.25)
+
         if self.id in self.shipMap:
             centre_position = (-self.shipMap[self.id].position[0]+MID_SCREEN,-self.shipMap[self.id].position[1]+MID_SCREEN)
         else:
             centre_position = (-MID_SCREEN,-MID_SCREEN)
+
+        # Add the cam offset to actual center for some more fluid ship moevent
+        centre_position = tuple(map(sum, zip(centre_position, self.cam_offset)))
 
         infinityBlit(self.playground, centre_position, self.screen)
 

@@ -76,22 +76,18 @@ class Spaceship(GameObject):
             self.velocity[1] = -SHIP_MAX_SPEED
         
         self.thruster = True
-    
-    def slow_down(self, deacc=0.25):
-        DEAC = SHIP_ACCELERATION*deacc
-        if(self.velocity[0] >= SHIP_ACCELERATION):
-            self.velocity = (self.velocity[0]-DEAC,self.velocity[1]) 
-        if(self.velocity[1] >= SHIP_ACCELERATION):
-            self.velocity = (self.velocity[0],self.velocity[1]-DEAC) 
-        if(self.velocity[0] <= SHIP_ACCELERATION):
-            self.velocity = (self.velocity[0]+DEAC,self.velocity[1]) 
-        if(self.velocity[1] <= SHIP_ACCELERATION):
-            self.velocity = (self.velocity[0],self.velocity[1]+DEAC) 
 
-        if( (self.velocity[0] < 0.001) and (self.velocity[0] > -0.001) ):
-            self.velocity = (0,self.velocity[1])
-        if( (self.velocity[1] < 0.001) and (self.velocity[1] > -0.001) ):
-            self.velocity = (self.velocity[0],0)
+    def slow_down(self, deceleration=SHIP_DECELERATION):
+
+        if(self.velocity[0] > SHIP_MIN_SPEED):
+            self.velocity[0] -= deceleration
+        elif(self.velocity[0] < -SHIP_MIN_SPEED):
+            self.velocity[0] += deceleration
+
+        if(self.velocity[1] > SHIP_MIN_SPEED):
+            self.velocity[1] -= deceleration
+        elif(self.velocity[1] < -SHIP_MIN_SPEED):
+            self.velocity[1] += deceleration
 
     def update(self, position, direction, thruster, dead, score):
         self.position = position
@@ -158,6 +154,7 @@ class Bullet(GameObject):
 class Asteroid(GameObject):
     def __init__(self, objectid, sprite_sheet, debri_sprite, position, direction, add_asteroid_callback, add_debri_callback, size=3):
         self.size = size
+        self.playSpeed = random.choice([0.125,0.25,0.5,0.75])
         size_to_scale = {
             3: 0.7  + random.uniform(0, 0.10),
             2: 0.5  + random.uniform(0, 0.05),
@@ -194,7 +191,7 @@ class Asteroid(GameObject):
     def draw(self, surface):
         super().draw(surface)
         self.sprite = self.frames[(32*self.framemod)+int(self.currentFrame)]
-        self.currentFrame += 0.25
+        self.currentFrame += self.playSpeed
         if self.currentFrame >= 32:
             self.currentFrame = 0
 
