@@ -171,7 +171,7 @@ class Asteroid(GameObject):
         self.currentFrame = 0
         self.framemod = random.randint(0,1)
 
-        super().__init__(0, objectid, self.frames[(32*self.framemod)+int(self.currentFrame)], position, get_random_velocity(0.1, 1))
+        super().__init__(0, objectid, self.frames[(32*self.framemod)+int(self.currentFrame)], position, get_random_velocity(0.25, 1.25))
         self.add_asteroid = add_asteroid_callback
         self.add_debri = add_debri_callback
 

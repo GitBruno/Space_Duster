@@ -42,6 +42,8 @@ class c_Game:
         self.shoot_sound = load_sound("fire")
         self.thrust_sound = load_sound("thrust")
 
+        self.score_font = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", 11)
+
     def requestId(self):
         if(self.idFrame == 0):
             self.send(['id_r',0,0])
@@ -203,19 +205,19 @@ class c_Game:
         if self.id in self.shipMap:
             myship = self.shipMap[self.id]
             if(myship.direction[0] > 0): # positive movement
-                if(self.cam_offset[0] > -(SCREEN_SIZE*0.4)):
+                if(self.cam_offset[0] > -(SCREEN_SIZE*0.35)):
                     self.cam_offset = (self.cam_offset[0]-(myship.direction[0]),self.cam_offset[1])
 
             if(myship.direction[0] < 0): # negative movement
-                if(self.cam_offset[0] < SCREEN_SIZE*0.4):
+                if(self.cam_offset[0] < SCREEN_SIZE*0.35):
                     self.cam_offset = (self.cam_offset[0]+(abs(myship.direction[0])),self.cam_offset[1])
 
             if(myship.direction[1] > 0): # positive movement
-                if(self.cam_offset[1] > -SCREEN_SIZE*0.4):
+                if(self.cam_offset[1] > -SCREEN_SIZE*0.35):
                     self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-(abs(myship.direction[1])))
 
             if(myship.direction[1] < 0): # negative movement
-                if(self.cam_offset[1] < SCREEN_SIZE*0.4):
+                if(self.cam_offset[1] < SCREEN_SIZE*0.35):
                     self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+(abs(myship.direction[1])))
 
     def draw(self):
@@ -238,13 +240,13 @@ class c_Game:
 
         # Keep centering slowly
         if(self.cam_offset[0] > 1):
-            self.cam_offset = (self.cam_offset[0]-0.25,self.cam_offset[1])
+            self.cam_offset = (self.cam_offset[0]-0.5,self.cam_offset[1])
         elif(self.cam_offset[0] < 1):
-            self.cam_offset = (self.cam_offset[0]+0.25,self.cam_offset[1])
+            self.cam_offset = (self.cam_offset[0]+0.5,self.cam_offset[1])
         if(self.cam_offset[1] > 1):
-            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-0.25)
+            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-0.5)
         elif(self.cam_offset[1] < 1):
-            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+0.25)
+            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+0.5)
 
         if self.id in self.shipMap:
             centre_position = (-self.shipMap[self.id].position[0]+MID_SCREEN,-self.shipMap[self.id].position[1]+MID_SCREEN)
@@ -255,6 +257,11 @@ class c_Game:
         centre_position = tuple(map(sum, zip(centre_position, self.cam_offset)))
 
         infinityBlit(self.playground, centre_position, self.screen)
+        
+        if self.id in self.shipMap:
+            text_surface = self.score_font.render(str(self.shipMap[self.id].score), True, (255,255,255))
+            rect = text_surface.get_rect()
+            self.screen.blit(text_surface, (10,10))
 
     def loop(self):
         # INIT SCREEN BEFORE GETTING UPDATES FROM SERVER
