@@ -70,6 +70,7 @@ class c_Game:
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 key_bulletshield = 'B'
+                self.shoot_sound.play()
                 action = True
 
 
@@ -101,14 +102,16 @@ class c_Game:
 
             if (button2):
                 if(self.button2_fresh):
+                    key_bulletshield = 'S'
+                    action = True
                     self.button2_fresh = False
-                    # Do Something
             else:
                 self.button2_fresh = True
 
             if (button1):
                 if(self.button1_fresh):
                     key_bulletshield = 'B'
+                    self.shoot_sound.play()
                     action = True
                     self.button1_fresh = False
             else:
