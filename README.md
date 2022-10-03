@@ -6,7 +6,7 @@
 
 ## Objective
 
-Create a multiplayer Asteroids game that runs on a Raspberry Pi and can handle 16 players.
+Create a multiplayer Asteroids game that runs on a Raspberry Pi and can handle 3 players.
 
 The player controls a single spaceship in an asteroid field that is traversed by the other players ships. The objective of the game is to shoot and destroy all other ships, whilst not colliding with astroids, or being hit by counter-fire.
 
