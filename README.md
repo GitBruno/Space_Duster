@@ -35,7 +35,7 @@ Foreign clients can join by specifying the servers ipaddress eg:
 ### Specification
 
   - Screen Size: 256 x 256 pixels
-  - 16 Players
+  - 3 Players
 
 #### Messages
 
@@ -43,6 +43,7 @@ Foreign clients can join by specifying the servers ipaddress eg:
 | Event            | [0] Message type | [1] Player ID | [2] Data     |
 |------------------|------------------|---------------|--------------|
 | ID Request       | 'id_r'           | `0`           | `0`          |
+| Player Ready     | 'pr'             | `0`           | `0`          |
 | Key Event        | 'k'              | `int`         | `[Key Data]` |
 
 **Server Messages**

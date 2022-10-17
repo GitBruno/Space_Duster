@@ -186,7 +186,7 @@ class Asteroid(GameObject):
 
     def hit(self):
         for dust in range (random.randint(20,60)):
-            self.add_debri(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(0.5, 1.5), get_random_direction(self.direction, PARTICLE_ANGLE_WIDTH) ))
+            self.add_debri(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(0.75, 2.5), get_random_direction(self.direction, PARTICLE_ANGLE_WIDTH) ))
 
     def draw(self, surface):
         super().draw(surface)
@@ -205,7 +205,7 @@ class Asteroid(GameObject):
 
 class Debri(GameObject):
     def __init__(self, ownerid, debri_sprite, position, velocity, direction):
-        self.moves = random.randint(5,50)
+        self.moves = random.randint(10,100)
         super().__init__(ownerid, new_object_id(), debri_sprite, position, velocity, direction)
 
     def move(self):

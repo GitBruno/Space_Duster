@@ -75,7 +75,8 @@ class s_Game:
             
             if (removeBullet == False):
                 for key, ship in self.shipmap.items():
-                    if ship.collides_with(bullet):
+                    # we can't shoot ourselves ... one of the rules in the game :)
+                    if ship.collides_with(bullet) and ship.ownerid is not bullet.ownerid:
                         self.shipmap[bullet.ownerid].score += 100 
                         ship.dead = True
             
@@ -90,8 +91,6 @@ class s_Game:
             for key, asteroid in self.asteroids.items():
                 if asteroid.collides_with(ship):
                     ship.dead = True
-
-
 
     def loop(self):
         while True:
@@ -139,7 +138,7 @@ class s_Game:
 
             if(key_bulletshield == 'B'):
                 self.bullets.append(Bullet(ship.ownerid, new_object_id(), self.s_bullet,
-                  ship.position, ship.direction * BULLET_SPEED + ship.velocity))
+                  ship.position,  ship.velocity + (ship.direction * BULLET_SPEED)))
 
     def addPlayer(self, playerId):
         self.shipmap[playerId] = Spaceship(playerId,self.shipSprites)

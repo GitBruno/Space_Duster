@@ -2,7 +2,8 @@ import sys, pygame
 from pygame import Vector2
 from pygame.locals import *
 from defines import *
-from utilis import load_sprite, infinityBlit, get_image_path, load_sound
+from utilis import load_sprite, infinityBlit, get_image_path, load_sound, channel1, channel2
+
 from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
 
@@ -47,8 +48,9 @@ class c_Game:
 
         self.hit_sound = load_sound("bangSmall")
         self.shoot_sound = load_sound("fire")
+        self.shoot_sound.set_volume(0.35)
         self.thrust_sound = load_sound("thrust")
-
+        
         self.score_font  = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", FONTSIZE_SCORE)
         self.small_font  = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", 10)
         self.action_font = pygame.font.Font("assets/fonts/ARCADE_I.TTF", FONTSIZE_ACTION)
@@ -88,15 +90,21 @@ class c_Game:
                     return
                 elif(self.currentState == "STATE_PLAYING"):
                     key_bulletshield = 'B'
-                    self.shoot_sound.play()
+                    channel2.play(self.shoot_sound)
                     action = True
 
+
+        if (self.currentState != "STATE_PLAYING"):
+            return
+
         is_key_pressed = pygame.key.get_pressed()
+
 
         if is_key_pressed[pygame.K_UP]:
             key_updown = 'U'
             action = True
-            self.thrust_sound.play()
+            if not channel1.get_busy():
+                channel1.play(self.thrust_sound)
             self.push_Cam()
         elif is_key_pressed[pygame.K_DOWN]:
             key_updown = 'D'
@@ -128,7 +136,7 @@ class c_Game:
             if (button1):
                 if(self.button1_fresh):
                     key_bulletshield = 'B'
-                    self.shoot_sound.play()
+                    channel2.play(self.shoot_sound)
                     action = True
                     self.button1_fresh = False
             else:
@@ -145,7 +153,8 @@ class c_Game:
                 action = True
             elif (axisY < 0):
                 key_updown = 'U'
-                self.thrust_sound.play()
+                if not channel1.get_busy():
+                    channel1.play(self.thrust_sound)
                 self.push_Cam()
                 action = True
 
@@ -159,7 +168,9 @@ class c_Game:
         if type == 'id':
             if self.id == 0:
                 self.id = data
-                self.currentState = "STATE_PLAYING";
+                self.currentState = "STATE_PLAYING"
+                msg = ['pr', self.id, 0]
+                self.send(msg)
             return
 
         if type == 's':
@@ -282,7 +293,6 @@ class c_Game:
         for key, bullet in self.bulletMap.items():
             bullet.draw(self.playground)
 
-
         # Keep centering slowly
         if(self.cam_offset[0] > 1):
             self.cam_offset = (self.cam_offset[0]-0.25,self.cam_offset[1])
@@ -307,11 +317,8 @@ class c_Game:
             text_surface = self.score_font.render(str(self.shipMap[self.id].score), True, (255,255,255))
             rect = text_surface.get_rect()
             self.screen.blit(text_surface, (10,10))
-        
-
 
     def draw(self):
-        print(self.currentState)
         if self.currentState == self.states[0]:
             self.draw_state_splash()
         elif self.currentState == self.states[1]:
