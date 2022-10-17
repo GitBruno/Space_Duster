@@ -24,20 +24,27 @@ class s_Game:
         self.s_bullet = load_sprite('bullet')
         self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
+        self.generateAsteroids(16)
 
-        for _ in range (16):
-            _ID=new_object_id()
-            self.asteroids.update({_ID : Asteroid(_ID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
+    def generateAsteroids(self, count):
+        for _ in range (count):
+            GID=new_object_id()
+            
+            if(len(self.shipmap) > 0):
+                while True:
+                    # This can potentially halt the gameloop when called whilst playing
+                    # It might be better to get a random postion based on triangulation of ship positions as we don't have to guess ... 
+                    myBreak = False
+                    position = get_random_position()
+                    for key, ship in self.shipmap.items():
+                        if ( position.distance_to(ship.position) > MIN_ASTEROID_DISTANCE):
+                            myBreak = True
+                    if(myBreak):
+                        break
+            else:
+                position = get_random_position()
 
-            #while True:
-            #    position = get_random_position()
-            #    myBreak = False
-            #    for ship in self.shipmap:
-            #        if ( position.distance_to(ship.position) > MIN_ASTEROID_DISTANCE):
-            #            myBreak = True
-            #    if(myBreak):
-            #        break
-            #self.asteroids.append(Asteroid(new_object_id(), self.asteroidSheet, position, Vector2(0, -1), self.asteroids.append))
+            self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
 
     def moveItem(self, item):
         item.move()
@@ -59,6 +66,9 @@ class s_Game:
                     objCont.remove(item)                
 
     def process_game_logic(self):
+        if len(self.asteroids) < 10:
+            self.generateAsteroids(2)
+
         self.moveItems(self.asteroids)
         self.moveItems(self.bullets)
         self.moveItems(self.shipmap)
