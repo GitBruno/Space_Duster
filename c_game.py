@@ -7,8 +7,15 @@ from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
 
 class c_Game:
+    states = [
+        "STATE_SPLASH",
+        "STATE_CONNECTING",
+        "STATE_PLAYING",
+        "STATE_TOAST"
+    ]
 
     def __init__(self, send, screen):
+        self.currentState = "STATE_SPLASH";
         self.clock = pygame.time.Clock()
         self.joystick = None
         self.button1_fresh = True
@@ -42,7 +49,9 @@ class c_Game:
         self.shoot_sound = load_sound("fire")
         self.thrust_sound = load_sound("thrust")
 
-        self.score_font = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", 11)
+        self.score_font  = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", FONTSIZE_SCORE)
+        self.small_font  = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", 10)
+        self.action_font = pygame.font.Font("assets/fonts/ARCADE_I.TTF", FONTSIZE_ACTION)
 
     def requestId(self):
         if(self.idFrame == 0):
@@ -53,9 +62,11 @@ class c_Game:
         else:
             self.idFrame = 0
 
-    def sendGameEvents(self):
-        if self.id == 0:
-            self.requestId()
+
+    def handleGameEvents(self):
+        if(self.currentState == "STATE_CONNECTING"):
+            if self.id == 0:
+                self.requestId()
             return
 
         key_bulletshield = ''
@@ -71,10 +82,14 @@ class c_Game:
                 sys.exit()
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                key_bulletshield = 'B'
-                self.shoot_sound.play()
-                action = True
-
+                if(self.currentState == "STATE_SPLASH" or self.currentState == "STATE_TOAST"):
+                    self.id = 0
+                    self.currentState = "STATE_CONNECTING"
+                    return
+                elif(self.currentState == "STATE_PLAYING"):
+                    key_bulletshield = 'B'
+                    self.shoot_sound.play()
+                    action = True
 
         is_key_pressed = pygame.key.get_pressed()
 
@@ -144,6 +159,7 @@ class c_Game:
         if type == 'id':
             if self.id == 0:
                 self.id = data
+                self.currentState = "STATE_PLAYING";
             return
 
         if type == 's':
@@ -152,8 +168,12 @@ class c_Game:
                 if playerId in self.shipMap:
                     if(self.shipMap[playerId].dead == False):
                         self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[8], ship[9])
+                    elif(playerId == self.id):
+                        #if(self.shipMap[self.id].dead == 2):
+                        self.currentState = "STATE_TOAST"
                 elif(ship[8] == False): # Not dead
                     self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
+
 
         if type == 'b':
             for key, item in self.bulletMap.items():
@@ -220,11 +240,32 @@ class c_Game:
                 if(self.cam_offset[1] < SCREEN_SIZE*0.35):
                     self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+(abs(myship.direction[1])))
 
-    def draw(self):
+    def draw_state_splash(self):
         self.playground.blit(self.background, (0,0))
+        self.screen.blit(self.playground,(-MID_GROUND,-MID_GROUND))
+        self.screen.blit(self.s_title,(0,50))
 
-        for key, bullet in self.bulletMap.items():
-            bullet.draw(self.playground)
+        text_surface = self.small_font.render("SHOOT TO START", True, (255,255,255))
+        text_rect = text_surface.get_rect()
+        text_rect.center = (MID_SCREEN, MID_SCREEN+35)
+        self.screen.blit(text_surface, text_rect)
+
+    def draw_state_connecting(self):
+        self.draw_state_playing()
+        text_surface = self.small_font.render("CONNECTING", True, (255,255,255))
+        text_rect = text_surface.get_rect()
+        text_rect.center = (MID_SCREEN, MID_SCREEN+35)
+        self.screen.blit(text_surface, text_rect)
+
+    def draw_state_toast(self):
+        self.draw_state_playing()
+        text_surface = self.action_font.render("YOU'RE TOAST!", True, (200,200,200))
+        text_rect = text_surface.get_rect()
+        text_rect.center = (MID_SCREEN,MID_SCREEN)
+        self.screen.blit(text_surface, text_rect)
+
+    def draw_state_playing(self):
+        self.playground.blit(self.background, (0,0))
 
         for key, asteroid in self.asteroidMap.items():
             asteroid.draw(self.playground)
@@ -238,15 +279,19 @@ class c_Game:
             if dust.moves < 1:
                self.debri.remove(dust) 
 
+        for key, bullet in self.bulletMap.items():
+            bullet.draw(self.playground)
+
+
         # Keep centering slowly
         if(self.cam_offset[0] > 1):
-            self.cam_offset = (self.cam_offset[0]-0.5,self.cam_offset[1])
+            self.cam_offset = (self.cam_offset[0]-0.25,self.cam_offset[1])
         elif(self.cam_offset[0] < 1):
-            self.cam_offset = (self.cam_offset[0]+0.5,self.cam_offset[1])
+            self.cam_offset = (self.cam_offset[0]+0.25,self.cam_offset[1])
         if(self.cam_offset[1] > 1):
-            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-0.5)
+            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]-0.25)
         elif(self.cam_offset[1] < 1):
-            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+0.5)
+            self.cam_offset = (self.cam_offset[0],self.cam_offset[1]+0.25)
 
         if self.id in self.shipMap:
             centre_position = (-self.shipMap[self.id].position[0]+MID_SCREEN,-self.shipMap[self.id].position[1]+MID_SCREEN)
@@ -257,18 +302,26 @@ class c_Game:
         centre_position = tuple(map(sum, zip(centre_position, self.cam_offset)))
 
         infinityBlit(self.playground, centre_position, self.screen)
-        
+
         if self.id in self.shipMap:
             text_surface = self.score_font.render(str(self.shipMap[self.id].score), True, (255,255,255))
             rect = text_surface.get_rect()
             self.screen.blit(text_surface, (10,10))
+        
+
+
+    def draw(self):
+        print(self.currentState)
+        if self.currentState == self.states[0]:
+            self.draw_state_splash()
+        elif self.currentState == self.states[1]:
+            self.draw_state_connecting()
+        elif self.currentState == self.states[3]:
+            self.draw_state_toast()
+        else:
+            self.draw_state_playing()
 
     def loop(self):
-        # INIT SCREEN BEFORE GETTING UPDATES FROM SERVER
-        self.playground.blit(self.background, (0,0))
-        self.screen.blit(self.playground,(-MID_GROUND,-MID_GROUND))
-        self.screen.blit(self.s_title,(0,50))
-        pygame.display.flip()
         while True:
-            self.sendGameEvents()
+            self.handleGameEvents()
             self.clock.tick(60)
