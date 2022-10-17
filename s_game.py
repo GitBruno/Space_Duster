@@ -98,7 +98,12 @@ class s_Game:
                 del self.asteroids[key]
 
         for key, ship in self.shipmap.items():
-            for key, asteroid in self.asteroids.items():
+            for key2, ship2 in self.shipmap.items():
+                if(ship.ownerid is not ship2.ownerid and ship.collides_with(ship2)):
+                    # Ship crashes, might take points off instead of dead? When shield is on bump them in the direction
+                    ship.dead = True
+                    ship2.dead = True
+            for key2, asteroid in self.asteroids.items():
                 if asteroid.collides_with(ship):
                     ship.dead = True
 
