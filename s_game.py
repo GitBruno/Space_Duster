@@ -119,8 +119,8 @@ class s_Game:
 
         if type == 'id_r':
             self.clientCounter += 1
-            #self.send(["id", self.clientCounter],source[0])
-            self.send(["id", self.clientCounter])
+            self.send(["id", self.clientCounter],source[0])
+            #self.send(["id", self.clientCounter])
             return
 
         if playerId == 0: return
