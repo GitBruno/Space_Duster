@@ -20,7 +20,7 @@ class s_Game:
         self.asteroids = {}
         self.debri = []
 
-        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
+        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),load_sprite("spaceship_shield"), SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
         self.s_bullet = load_sprite('bullet')
         self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
@@ -129,10 +129,10 @@ class s_Game:
             self.addPlayer(playerId)
  
         ship = self.shipmap[playerId]
-        if(ship.alpha <= 250):
-            ship.alpha = ship.alpha + 5
-        else:
-            ship.alpha = 255
+        # if(ship.alpha <= 250):
+        #     ship.alpha = ship.alpha + 5
+        # else:
+        #     ship.alpha = 255
 
         if(type == 'k'):
             key_updown       = data[0]
@@ -154,6 +154,8 @@ class s_Game:
             if(key_bulletshield == 'B'):
                 self.bullets.append(Bullet(ship.ownerid, new_object_id(), self.s_bullet,
                   ship.position,  ship.velocity + (ship.direction * BULLET_SPEED)))
+            elif(key_bulletshield == 'S'):
+                ship.shield = 1
 
     def addPlayer(self, playerId):
         self.shipmap[playerId] = Spaceship(playerId,self.shipSprites)
@@ -166,6 +168,8 @@ class s_Game:
                 updateMsg[1].append(item.getData())
                 if hasattr(item,'thruster'):
                     item.thruster = 0
+                if hasattr(item,'shield'):
+                    item.shield = 0
         else: # array
             for item in objContainer:
                 updateMsg[1].append(item.getData())

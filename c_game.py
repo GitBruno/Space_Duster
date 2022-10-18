@@ -34,7 +34,7 @@ class c_Game:
         self.background = load_sprite("space", False)
         self.cam_offset = (0,0)
 
-        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
+        self.shipSprites = [load_sprite('spaceship'),load_sprite("spaceship_thrust"),load_sprite("spaceship_shield"),SpriteSheet(get_image_path("ship_explosion_7_41x41_287"))]
         self.s_bullet = load_sprite('bullet')
         self.s_debri  = load_sprite("debri")
         self.asteroidSheet = SpriteSheet(get_image_path("asteroid_8x8-sheet"))
@@ -178,7 +178,7 @@ class c_Game:
                 playerId = ship[0]
                 if playerId in self.shipMap:
                     if(self.shipMap[playerId].dead == False):
-                        self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[8], ship[9])
+                        self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
                     elif(playerId == self.id):
                         #if(self.shipMap[self.id].dead == 2):
                         self.currentState = "STATE_TOAST"
