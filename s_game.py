@@ -29,22 +29,14 @@ class s_Game:
     def generateAsteroids(self, count):
         for _ in range (count):
             GID=new_object_id()
-            
-            if(len(self.shipmap) > 0):
-                while True:
-                    # This can potentially halt the gameloop when called whilst playing
-                    # It might be better to get a random postion based on triangulation of ship positions as we don't have to guess ... 
-                    myBreak = False
-                    position = get_random_position()
-                    for key, ship in self.shipmap.items():
-                        if ( position.distance_to(ship.position) > MIN_ASTEROID_DISTANCE):
-                            myBreak = True
-                    if(myBreak):
-                        break
-            else:
-                position = get_random_position()
+            position = get_random_position()
 
-            self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
+            if(len(self.shipmap) > 0):
+                for key, ship in self.shipmap.items():
+                    if ( getInfinityDistance(position, ship.position) > SCREEN_SIZE): 
+                        self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
+            else:
+                self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
 
     def moveItem(self, item):
         item.move()
@@ -66,7 +58,7 @@ class s_Game:
                     objCont.remove(item)                
 
     def process_game_logic(self):
-        if len(self.asteroids) < 10:
+        if len(self.asteroids) < 15:
             self.generateAsteroids(2)
 
         self.moveItems(self.asteroids)
