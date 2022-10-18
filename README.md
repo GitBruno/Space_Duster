@@ -1,6 +1,6 @@
 # Space Duster
 
-![Title](/assets/sprites/space_duster_512.png)
+![Preview](/assets/space_duster_preview.gif)
 
 > A multiplayer python game inspired by Asteroids
 
