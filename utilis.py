@@ -103,15 +103,15 @@ def blit_text(surface, text, font, offset=(0,0), color=Color("white")):
     rect.center = tuple(map(sum, zip( rect.center, offset)))
     surface.blit(text_surface, rect)
 
-def updateScore(score):
+def handleHighScore(score):
     f = open('scores.txt','r')
-    file = f.readlines()
-    last = int(file[0])
+    lines = f.readlines()
+    high = int(lines[0])
 
-    if last < int(score):
+    if high < int(score):
         f.close()
-        file = open('scores.txt', 'w')
-        file.write(str(score))
-        file.close()
+        f = open('scores.txt', 'w')
+        f.write(str(score))
+        f.close()
 
-    return last
+    return high

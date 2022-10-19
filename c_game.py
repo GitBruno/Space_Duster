@@ -15,6 +15,9 @@ class c_Game:
         "STATE_TOAST"
     ]
 
+    toastTime = 300
+    toastedAt = None
+
     def __init__(self, send, screen):
         self.currentState = "STATE_SPLASH";
         self.clock = pygame.time.Clock()
@@ -84,17 +87,26 @@ class c_Game:
                 sys.exit()
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                if(self.currentState == "STATE_SPLASH" or self.currentState == "STATE_TOAST"):
+                if(self.currentState == "STATE_SPLASH"):
                     self.id = 0
                     self.currentState = "STATE_CONNECTING"
                     return
-                elif(self.currentState == "STATE_PLAYING"):
+                elif(self.currentState == "STATE_TOAST"):
+                    if(self.toastedAt is not None):
+                        now = pygame.time.get_ticks()
+                        if now - self.toastedAt >= self.toastTime:
+                            self.toastedAt = None
+                    else:
+                        self.id = 0
+                        self.currentState = "STATE_CONNECTING"
+                    return
+                elif(self.currentState == "STATE_PLAYING" and self.id in self.shipMap):
                     key_bulletshield = 'B'
                     channel2.play(self.shoot_sound)
                     action = True
 
-
-        if (self.currentState != "STATE_PLAYING"):
+        if (self.currentState != "STATE_PLAYING" or self.id not in self.shipMap):
+            print("ID:", self.id, "STATE:", self.currentState)
             return
 
         is_key_pressed = pygame.key.get_pressed()
@@ -178,12 +190,14 @@ class c_Game:
                 playerId = ship[0]
                 if playerId in self.shipMap:
                     if(self.shipMap[playerId].dead == False):
-                        self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
+                        self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9], ship[10])
                     elif(playerId == self.id):
                         #if(self.shipMap[self.id].dead == 2):
-                        self.currentState = "STATE_TOAST"
+                        if(self.currentState is not "STATE_TOAST"):
+                            self.currentState = "STATE_TOAST"
+                            self.toastedAt = pygame.time.get_ticks()
                 elif(ship[8] == False): # Not dead
-                    self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9])
+                    self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9], ship[10])
 
 
         if type == 'b':
@@ -270,10 +284,24 @@ class c_Game:
 
     def draw_state_toast(self):
         self.draw_state_playing()
-        text_surface = self.action_font.render("YOU'RE TOAST!", True, (200,200,200))
+        titleText = "TOAST!"
+
+        if self.id in self.shipMap:
+            myship = self.shipMap[self.id]
+            if(myship.highScore < myship.score):
+                titleText = "HIGH SCORE!"
+            else:
+                text_surface = self.small_font.render("High Score: " + str(myship.highScore), True, (255,255,255))
+                self.screen.blit(text_surface, (45, MID_SCREEN+20))
+
+        text_surface = self.action_font.render(titleText, True, (200,200,200))
         text_rect = text_surface.get_rect()
-        text_rect.center = (MID_SCREEN,MID_SCREEN)
+        text_rect.center = (MID_SCREEN,MID_SCREEN-20)
         self.screen.blit(text_surface, text_rect)
+
+        text_surface = self.small_font.render("Your Score: " + str(myship.score), True, (255,255,255))
+        self.screen.blit(text_surface, (45, MID_SCREEN+5))
+
 
     def draw_state_playing(self):
         self.playground.blit(self.background, (0,0))

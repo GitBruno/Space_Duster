@@ -73,6 +73,7 @@ Foreign clients can join by specifying the servers ipaddress eg:
     7. Shield (Bool)
     8. Dead (0-2) False, True Animating, True
     9. Score (int)
+    10. High Score (int)
 
 `Bullet Data`(array):  
 

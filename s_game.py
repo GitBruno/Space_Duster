@@ -4,7 +4,7 @@ from pygame.math import Vector2
 from defines import *
 from models import Spaceship, Bullet, Asteroid
 from spritesheet import SpriteSheet
-from utilis import get_random_position, new_object_id, load_sprite, get_image_path, getInfinityDistance
+from utilis import get_random_position, new_object_id, load_sprite, get_image_path, getInfinityDistance, handleHighScore
 
 pygame.init()
 pygame.display.init()
@@ -57,6 +57,10 @@ class s_Game:
                 if(not self.moveItem(item)):
                     objCont.remove(item)                
 
+    def kill(self, ship):
+        ship.dead = True
+        ship.highScore = handleHighScore(ship.score)
+
     def process_game_logic(self):
         if len(self.asteroids) < 15:
             self.generateAsteroids(2)
@@ -80,7 +84,7 @@ class s_Game:
                     # we can't shoot ourselves ... one of the rules in the game :)
                     if ship.collides_with(bullet) and ship.ownerid is not bullet.ownerid:
                         self.shipmap[bullet.ownerid].score += 100 
-                        ship.dead = True
+                        self.kill(ship)
             
             if(removeBullet or getInfinityDistance(self.shipmap[bullet.ownerid].position, bullet.position) > SHIP_MAX_BULLET_DIST):
                 self.bullets.remove(bullet)
@@ -93,11 +97,11 @@ class s_Game:
             for key2, ship2 in self.shipmap.items():
                 if(ship.ownerid is not ship2.ownerid and ship.collides_with(ship2)):
                     # Ship crashes, might take points off instead of dead? When shield is on bump them in the direction
-                    ship.dead = True
-                    ship2.dead = True
+                    self.kill(ship)
+                    self.kill(ship2)
             for key2, asteroid in self.asteroids.items():
                 if asteroid.collides_with(ship):
-                    ship.dead = True
+                    self.kill(ship)
 
     def loop(self):
         while True:

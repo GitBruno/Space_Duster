@@ -43,24 +43,24 @@ class GameObject:
 
 class Spaceship(GameObject):
     deadsound = load_sound("bangLarge")
-    def __init__(self, ownerid, sprites, position=get_random_position(), velocity=Vector2(0, 0), direction=Vector2(0, -1), thruster=False, shield=False, dead=False, score=0):
+    def __init__(self, ownerid, sprites, position=get_random_position(), velocity=Vector2(0, 0), direction=Vector2(0, -1), thruster=False, shield=False, dead=False, score=0, highScore=0):
         super().__init__(ownerid, new_object_id(), sprites[0], position, velocity, direction)
-        self.dead     = dead
-        self.alpha    = 255
-        self.thruster = thruster
-        self.shield   = shield
-        self.score    = score
-        self.width    = self.sprite.get_width()
-        self.height   = self.sprite.get_height()
-        self.radius   = self.width*0.5
+        self.dead      = dead
+        self.alpha     = 255
+        self.thruster  = thruster
+        self.shield    = shield
+        self.score     = score
+        self.highScore = highScore
+        self.width     = self.sprite.get_width()
+        self.height    = self.sprite.get_height()
+        self.radius    = self.width*0.5
         self.sprite_thrust = sprites[1]
         self.sprite_shield = sprites[2]
         self.ss_explosion  = sprites[3]
-        self.explframes = []
+        self.explframes    = []
         for i in range(7):
             self.explframes.append(self.ss_explosion.image_at((i*41,0,41,41)))
-
-        self.currentFrame = 0
+        self.currentFrame  = 0
 
     def rotate(self, clockwise=True):
         sign = 1 if clockwise else -1
@@ -99,13 +99,14 @@ class Spaceship(GameObject):
         else:
             self.velocity[1] = -SHIP_MIN_SPEED
 
-    def update(self, position, direction, thruster, shield, dead, score):
+    def update(self, position, direction, thruster, shield, dead, score, highScore):
         self.position = position
         self.direction = direction
         self.thruster = thruster
         self.shield = shield
         self.dead = dead
         self.score = score
+        self.highScore = highScore
 
     def draw(self, toSurface):
         if self.dead == 2:
@@ -149,7 +150,7 @@ class Spaceship(GameObject):
                  trunc(self.direction[0]), 
                  trunc(self.direction[1]),
                  self.thruster, self.shield,
-                 self.dead, self.score]
+                 self.dead, self.score, self.highScore]
 
 class Bullet(GameObject):
     def __init__( self, ownerid, objectid, sprite,
