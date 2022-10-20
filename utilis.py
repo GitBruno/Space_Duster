@@ -44,7 +44,7 @@ def get_random_velocity(min_speed, max_speed):
     return Vector2(speed, 0).rotate(angle)
 
 def get_random_direction(start_dir, max_displacement):
-    direction = start_dir.copy()
+    direction = Vector2(start_dir)
     direction.rotate_ip(random.uniform(-max_displacement, max_displacement))
     return direction
 
