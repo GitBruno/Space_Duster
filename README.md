@@ -12,7 +12,7 @@ The player controls a single spaceship in an asteroid field that is traversed by
 
 #### History
 
-This game is based on Asteroids which has it's physics model, control scheme, and gameplay elements derived from Spacewar!, Computer Space, and Space Invaders. The Asteroids game is rendered on a vector display in a two-dimensional view that wraps around both screen axes. As we have 16 players and a very small screen the play area has been made larger and we follow the ship with a camera. The field is still titled for infinacy.
+This game is based on Asteroids which has it's physics model, control scheme, and gameplay elements derived from Spacewar!, Computer Space, and Space Invaders. The Asteroids game is rendered on a vector display in a two-dimensional view that wraps around both screen axes. As we have 3 players and a very small screen the play area has been made larger and we follow the ship with a camera. The field is still titled for infinacy.
 
 ## Install
 
