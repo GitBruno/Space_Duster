@@ -189,14 +189,14 @@ class c_Game:
             for ship in data:
                 playerId = ship[0]
                 if playerId in self.shipMap:
-                    if(self.shipMap[playerId].dead == False):
+                    if(self.shipMap[playerId].dead == 0):
                         self.shipMap[playerId].update(Vector2(ship[2], ship[3]), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9], ship[10])
                     elif(playerId == self.id):
                         #if(self.shipMap[self.id].dead == 2):
                         if(self.currentState is not "STATE_TOAST"):
                             self.currentState = "STATE_TOAST"
                             self.toastedAt = pygame.time.get_ticks()
-                elif(ship[8] == False): # Not dead
+                elif(ship[8] == 0): # Not dead
                     self.shipMap[playerId] = Spaceship(ship[0], self.shipSprites, Vector2(ship[2], ship[3]), Vector2(0, 0), Vector2(ship[4], ship[5]), ship[6], ship[7], ship[8], ship[9], ship[10])
 
 
