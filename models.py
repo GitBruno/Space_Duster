@@ -168,13 +168,14 @@ class Bullet(GameObject):
                  trunc(self.velocity[1])]
 
 class Asteroid(GameObject):
-    def __init__(self, objectid, sprite_sheet, debri_sprite, position, direction, add_asteroid_callback, add_debri_callback, size=3):
+    # It might be quicker to save the spritesheet for all and draw at scale
+    def __init__(self, objectid, sprite_sheet, debri_sprite, position, direction, add_asteroid_callback, debri_arr, size=3):
         self.size = size
         self.playSpeed = random.choice([0.125,0.25,0.5])
         size_to_scale = {
-            3: 0.7  + random.uniform(0, 0.2),
-            2: 0.5  + random.uniform(0, 0.2),
-            1: 0.25 + random.uniform(0, 0.2)}
+            3: 0.7  + random.uniform(0, 0.3),
+            2: 0.5  + random.uniform(0, 0.3),
+            1: 0.25 + random.uniform(0, 0.3)}
         self.sprite_sheet = sprite_sheet
         self.debri_sprite = debri_sprite
         self.frames = []
@@ -190,7 +191,7 @@ class Asteroid(GameObject):
 
         super().__init__(0, objectid, self.frames[(32*self.framemod)+int(self.currentFrame)], position, get_random_velocity(0.25, 1.75))
         self.add_asteroid = add_asteroid_callback
-        self.add_debri = add_debri_callback
+        self.debri_arr = debri_arr
 
     def update(self, position):
         self.position = position
@@ -198,14 +199,14 @@ class Asteroid(GameObject):
     def split(self):
         if self.size > 1:
             for _ in range(random.randint(2,4)):
+                if(len(self.debri_arr) > MAX_DEBRI):
+                    return
                 _id = new_object_id()
-                self.add_asteroid({_id : Asteroid(_id, self.sprite_sheet, self.debri_sprite, self.position, self.direction, self.add_asteroid, self.add_debri, self.size - 1) } )
+                self.add_asteroid({_id : Asteroid(_id, self.sprite_sheet, self.debri_sprite, self.position, self.direction, self.add_asteroid, self.debri_arr, self.size - 1) } )
 
     def hit(self):
-        r_vel_min = random.uniform(0.1, 0.5)
-        r_vel_max = random.uniform(r_vel_min, 1.5)
-        for dust in range (random.randint(self.size * 30, self.size * 60)):
-            self.add_debri(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(r_vel_min+random.uniform(0.25, 0.9), r_vel_max+random.uniform(0.1, 0.9)), get_random_direction(self.direction, PARTICLE_ANGLE_WIDTH) ))
+        for dust in range (random.randint(self.size * 10, self.size * 30)):
+            self.debri_arr.append(Debri(self.ownerid, self.debri_sprite, self.position, get_random_velocity(0.5, 2.5), get_random_direction(self.direction, PARTICLE_ANGLE_WIDTH) ))
 
     def draw(self, surface):
         super().draw(surface)
@@ -224,9 +225,9 @@ class Asteroid(GameObject):
 
 class Debri(GameObject):
     def __init__(self, ownerid, debri_sprite, position, velocity, direction):
-        self.moves = random.randint(10,80) #random.randint(5,50)+random.randint(5,150)
+        self.moves = random.randint(20,60)
         super().__init__(ownerid, new_object_id(), debri_sprite, position, velocity, direction)
 
     def move(self):
-        self.moves = self.moves-1;
+        self.moves = self.moves-1
         self.position = wrap_ground(self.position + self.velocity)

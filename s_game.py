@@ -34,9 +34,9 @@ class s_Game:
             if(len(self.shipmap) > 0):
                 for key, ship in self.shipmap.items():
                     if ( getInfinityDistance(position, ship.position) > SCREEN_SIZE): 
-                        self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
+                        self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri)} )
             else:
-                self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri.append)} )
+                self.asteroids.update({GID : Asteroid(GID, self.asteroidSheet, self.s_debri, get_random_position(), Vector2(0, -1), self.asteroids.update, self.debri)} )
 
     def moveItem(self, item):
         item.move()

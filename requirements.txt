@@ -1,3 +1,4 @@
 pygame
 msgpack
 pygame-menu
+particlepy

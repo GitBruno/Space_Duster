@@ -58,6 +58,9 @@ class c_Game:
         self.small_font  = pygame.font.Font("assets/fonts/PublicPixel-0W5Kv.ttf", 10)
         self.action_font = pygame.font.Font("assets/fonts/ARCADE_I.TTF", FONTSIZE_ACTION)
 
+    def under_maximum_debri(self):
+        return (len(self.debri) < MAX_DEBRI)
+
     def requestId(self):
         if(self.idFrame == 0):
             self.send(['id_r',0,0])
@@ -106,7 +109,7 @@ class c_Game:
                     action = True
 
         if (self.currentState != "STATE_PLAYING" or self.id not in self.shipMap):
-            print("ID:", self.id, "STATE:", self.currentState)
+            #print("ID:", self.id, "STATE:", self.currentState)
             return
 
         is_key_pressed = pygame.key.get_pressed()
@@ -229,7 +232,7 @@ class c_Game:
                 if objectId in self.asteroidMap:
                     self.asteroidMap[objectId].update(Vector2(asteroid[2], asteroid[3]))
                 else: # objectid, sprite_sheet, position, direction, size=3
-                    self.asteroidMap[objectId] = Asteroid(objectId, self.asteroidSheet, self.s_debri, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), self.asteroidMap.update, self.debri.append, size=asteroid[6])
+                    self.asteroidMap[objectId] = Asteroid(objectId, self.asteroidSheet, self.s_debri, Vector2(asteroid[2], asteroid[3]), Vector2(asteroid[4], asteroid[5]), self.asteroidMap.update, self.debri, size=asteroid[6])
                 self.asteroidMap[objectId].touched = True
 
             delete = []
