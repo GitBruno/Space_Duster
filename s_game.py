@@ -62,7 +62,7 @@ class s_Game:
         ship.highScore = handleHighScore(ship.score)
 
     def process_game_logic(self):
-        if len(self.asteroids) < 15:
+        if len(self.asteroids) < 10:
             self.generateAsteroids(2)
 
         self.moveItems(self.asteroids)
