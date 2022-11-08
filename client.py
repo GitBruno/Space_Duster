@@ -14,6 +14,7 @@ class DustClient:
     screen = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
     pygame.display.set_caption('Space Duster')
     pygame.event.set_allowed([QUIT, KEYDOWN, KEYUP])
+    pygame.mouse.set_visible(False)
 
     rSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
